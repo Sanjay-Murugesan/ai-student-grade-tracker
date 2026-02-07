@@ -1,0 +1,39 @@
+/* Assignments Styles */
+
+.assignment-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.assignment-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+}
+
+.assignment-card .card-title {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.assignment-card .card-text {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.assignment-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.assignment-details p {
+    margin: 8px 0;
+    color: #555;
+}
+
+.assignment-details strong {
+    color: #333;
+}

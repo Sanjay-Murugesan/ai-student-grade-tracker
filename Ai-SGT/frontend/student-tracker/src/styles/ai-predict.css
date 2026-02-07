@@ -1,0 +1,70 @@
+/* AI Prediction Styles */
+
+.prediction-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.prediction-card .card-title {
+    font-weight: 600;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 15px;
+}
+
+.prediction-item {
+    margin-bottom: 20px;
+}
+
+.prediction-item label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    opacity: 0.9;
+}
+
+.prediction-item h3 {
+    font-size: 2.5rem;
+    margin: 10px 0;
+    font-weight: 700;
+}
+
+.risk-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.risk-badge.risk-low {
+    background-color: #48bb78;
+    color: white;
+}
+
+.risk-badge.risk-medium {
+    background-color: #ed8936;
+    color: white;
+}
+
+.risk-badge.risk-high {
+    background-color: #f56565;
+    color: white;
+}
+
+.progress {
+    height: 25px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.progress-bar {
+    background-color: #48bb78;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
