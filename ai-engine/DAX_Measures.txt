@@ -1,0 +1,1 @@
+Total Sales = SUM(Sales[Sales])Total Profit = SUM(Sales[Profit])Profit Margin % =DIVIDE([Total Profit], [Total Sales], 0) * 100Low Margin Flag =IF([Profit Margin %] < 5, "Low", "Good")

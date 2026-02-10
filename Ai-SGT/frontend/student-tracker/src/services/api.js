@@ -32,6 +32,7 @@ export const getUser = (id) => api.get(`/api/v1/users/${id}`);
 
 // -------- Student API --------
 export const getStudents = () => api.get("/api/v1/students");
+export const getStudentByUserId = (userId) => api.get(`/api/v1/students/user/${userId}`);
 export const addStudent = (data) => api.post("/api/v1/students", data);
 export const updateStudent = (id, data) => api.put(`/api/v1/students/${id}`, data);
 export const deleteStudent = (id) => api.delete(`/api/v1/students/${id}`);
@@ -39,6 +40,7 @@ export const deleteStudent = (id) => api.delete(`/api/v1/students/${id}`);
 // -------- Instructor API --------
 export const getInstructors = () => api.get("/api/v1/instructors");
 export const getInstructor = (id) => api.get(`/api/v1/instructors/${id}`);
+export const getInstructorByUserId = (userId) => api.get(`/api/v1/instructors/user/${userId}`);
 
 // -------- Course API --------
 export const getCourses = () => api.get("/api/v1/courses");

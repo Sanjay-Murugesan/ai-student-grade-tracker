@@ -35,6 +35,7 @@ public class AssignmentService {
         existing.setDescription(a.getDescription());
         existing.setDueDate(a.getDueDate());
         existing.setMaxMarks(a.getMaxMarks());
+        existing.setPriority(a.getPriority());
         return repo.save(existing);
     }
 

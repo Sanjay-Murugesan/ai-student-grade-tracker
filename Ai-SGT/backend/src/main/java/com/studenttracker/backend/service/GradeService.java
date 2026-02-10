@@ -44,6 +44,9 @@ public class GradeService {
         if (existing == null)
             return null;
         existing.setScore(grade.getScore());
+        existing.setFeedback(grade.getFeedback());
+        existing.setGradedBy(grade.getGradedBy());
+        existing.setGradedAt(grade.getGradedAt());
         return repo.save(existing);
     }
 

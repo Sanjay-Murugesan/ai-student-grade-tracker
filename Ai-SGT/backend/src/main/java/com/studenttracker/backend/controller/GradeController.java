@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/grades")
+@RequestMapping("/api/v1/grades")
 @CrossOrigin("*")
 public class GradeController {
 
@@ -22,6 +22,12 @@ public class GradeController {
         return service.save(g);
     }
 
+    @GetMapping
+    public List<Grade> all() { return service.getAll(); }
+
+    @GetMapping("/{id}")
+    public Grade get(@PathVariable Long id) { return service.getById(id); }
+
     @GetMapping("/student/{id}")
     public List<Grade> byStudent(@PathVariable Long id) {
         return service.getByStudent(id);
@@ -31,4 +37,12 @@ public class GradeController {
     public List<Grade> byAssignment(@PathVariable Long id) {
         return service.getByAssignment(id);
     }
+
+    @PutMapping("/{id}")
+    public Grade update(@PathVariable Long id, @RequestBody Grade g) {
+        return service.updateGrade(id, g);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) { service.deleteGrade(id); }
 }

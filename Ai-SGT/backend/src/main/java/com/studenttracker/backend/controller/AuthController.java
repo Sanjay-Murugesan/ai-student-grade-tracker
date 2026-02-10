@@ -2,6 +2,10 @@ package com.studenttracker.backend.controller;
 
 import com.studenttracker.backend.entity.User;
 import com.studenttracker.backend.entity.UserRole;
+import com.studenttracker.backend.entity.Student;
+import com.studenttracker.backend.entity.Instructor;
+import com.studenttracker.backend.service.StudentService;
+import com.studenttracker.backend.service.InstructorService;
 import com.studenttracker.backend.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +20,13 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserService userService;
+    private final StudentService studentService;
+    private final InstructorService instructorService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, StudentService studentService, InstructorService instructorService) {
         this.userService = userService;
+        this.studentService = studentService;
+        this.instructorService = instructorService;
     }
 
     @PostMapping("/signup")
@@ -102,6 +110,24 @@ public class AuthController {
             }
 
             User createdUser = userService.createUser(user);
+
+            // Create role-specific profile
+            if (createdUser.getRole() == UserRole.STUDENT) {
+                Student student = new Student();
+                student.setUserId(createdUser.getId());
+                student.setName(name);
+                student.setEmail(email);
+                student.setDepartment(department);
+                student.setYear(year);
+                studentService.createStudent(student);
+            } else if (createdUser.getRole() == UserRole.INSTRUCTOR) {
+                Instructor instructor = new Instructor();
+                instructor.setUserId(createdUser.getId());
+                instructor.setName(name != null && !name.isBlank() ? name : createdUser.getUsername());
+                instructor.setEmail(email);
+                instructor.setDepartment(department);
+                instructorService.createInstructor(instructor);
+            }
 
             // Return success response
             Map<String, Object> response = new HashMap<>();

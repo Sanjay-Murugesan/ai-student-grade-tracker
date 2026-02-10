@@ -5,9 +5,10 @@ import com.studenttracker.backend.service.StudentService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/students")
+@RequestMapping("/api/v1/students")
 @CrossOrigin("*")
 public class StudentController {
 
@@ -25,6 +26,12 @@ public class StudentController {
 
     @GetMapping("/{id}")
     public Student get(@PathVariable Long id) { return service.getById(id); }
+
+    @GetMapping("/user/{userId}")
+    public Student getByUserId(@PathVariable Long userId) {
+        Optional<Student> student = service.getByUserId(userId);
+        return student.orElse(null);
+    }
 
     @PutMapping("/{id}")
     public Student update(@PathVariable Long id, @RequestBody Student s) {

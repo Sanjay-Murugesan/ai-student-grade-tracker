@@ -1,55 +1,63 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { getGradesByStudent, getCourses } from "../services/api";
+import { getAssignments, getGradesByStudent, getStudentByUserId } from "../services/api";
 import "../styles/dashboard.css";
 import CountUp from "react-countup";
 
-export default function DashboardPage() {
-  const { user, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  const [courses, setCourses] = useState([]);
+export default function StudentDashboardPage() {
+  const { user } = useContext(AuthContext);
+  const [assignments, setAssignments] = useState([]);
   const [grades, setGrades] = useState([]);
   const [averageGrade, setAverageGrade] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [studentId, setStudentId] = useState(null);
 
   useEffect(() => {
-    if (user?.id) fetchData();
+    if (user?.id) {
+      loadStudentData(user.id);
+    }
   }, [user]);
 
-  const fetchData = async () => {
+  const loadStudentData = async (userId) => {
     try {
       setLoading(true);
-
-      const coursesRes = await getCourses();
-      setCourses(coursesRes?.data || []);
-
-      const gradesRes = await getGradesByStudent(user.id);
-      const gradesData = Array.isArray(gradesRes?.data) ? gradesRes.data : [];
-
-      setGrades(gradesData);
-
-      const avg =
-        gradesData.length > 0
-          ? (
-              gradesData.reduce((sum, g) => sum + (Number(g.score) || 0), 0) /
-              gradesData.length
-            ).toFixed(1)
-          : 0;
-
-      setAverageGrade(avg);
+      const studentRes = await getStudentByUserId(userId);
+      const student = studentRes?.data;
+      if (student?.studentId) {
+        setStudentId(student.studentId);
+        await Promise.all([fetchAssignments(), fetchGrades(student.studentId)]);
+      } else {
+        setAssignments([]);
+        setGrades([]);
+      }
     } catch (error) {
-      console.error("Dashboard fetch error:", error);
+      console.error("Student dashboard fetch error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const fetchAssignments = async () => {
+    const assignmentsRes = await getAssignments();
+    setAssignments(assignmentsRes?.data || []);
   };
+
+  const fetchGrades = async (studentIdValue) => {
+    const gradesRes = await getGradesByStudent(studentIdValue);
+    const gradesData = Array.isArray(gradesRes?.data) ? gradesRes.data : [];
+    setGrades(gradesData);
+
+    const avg =
+      gradesData.length > 0
+        ? (
+            gradesData.reduce((sum, g) => sum + (Number(g.score) || 0), 0) /
+            gradesData.length
+          ).toFixed(1)
+        : 0;
+    setAverageGrade(avg);
+  };
+
+  const upcomingAssignments = assignments.filter((a) => new Date(a.dueDate) > new Date()).length;
 
   return (
     <div className="dashboard-page">
@@ -68,23 +76,21 @@ export default function DashboardPage() {
               <h2>Welcome back, {user?.username}</h2>
               <p className="welcome-date">{new Date().toDateString()}</p>
             </div>
-            <button className="ghost-btn" onClick={handleLogout}>
-              Sign out
-            </button>
+            <div className="badge-chip">{studentId ? `Student ID: ${studentId}` : "Profile pending"}</div>
           </div>
 
           <section className="stats-grid">
             <div className="stat-card">
-              <h4>Courses</h4>
+              <h4>Total Assignments</h4>
               <p className="value">
-                <CountUp end={courses.length} />
+                <CountUp end={assignments.length} />
               </p>
             </div>
 
             <div className="stat-card">
-              <h4>Grades</h4>
+              <h4>Upcoming</h4>
               <p className="value">
-                <CountUp end={grades.length} />
+                <CountUp end={upcomingAssignments} />
               </p>
             </div>
 
@@ -97,7 +103,7 @@ export default function DashboardPage() {
           </section>
 
           <section className="ai-insight">
-            <h3>AI Insight</h3>
+            <h3>Performance Insight</h3>
             <p>
               {averageGrade >= 75
                 ? "Excellent performance. Keep it up!"

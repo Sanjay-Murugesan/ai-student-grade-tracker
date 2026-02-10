@@ -33,4 +33,11 @@ public class Grade {
 
     @Column(name = "graded_at")
     private LocalDateTime gradedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (gradedAt == null) {
+            gradedAt = LocalDateTime.now();
+        }
+    }
 }

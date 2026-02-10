@@ -22,7 +22,7 @@ const InstructorLoginPage = () => {
             const { token, user } = response.data;
 
             login(user, token);
-            navigate("/dashboard");
+            navigate("/teacher/dashboard");
         } catch (err) {
             setError(err.response?.data?.message || "Login failed. Please try again.");
         } finally {

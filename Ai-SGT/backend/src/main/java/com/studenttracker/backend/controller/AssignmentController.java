@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/assignments")
+@RequestMapping("/api/v1/assignments")
 @CrossOrigin("*")
 public class AssignmentController {
 
@@ -22,4 +22,15 @@ public class AssignmentController {
 
     @GetMapping
     public List<Assignment> all() { return service.getAll(); }
+
+    @GetMapping("/{id}")
+    public Assignment get(@PathVariable Long id) { return service.getById(id); }
+
+    @PutMapping("/{id}")
+    public Assignment update(@PathVariable Long id, @RequestBody Assignment a) {
+        return service.updateAssignment(id, a);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) { service.deleteAssignment(id); }
 }

@@ -29,6 +29,9 @@ public class Assignment {
     @Column(name = "max_marks")
     private Integer maxMarks;
 
+    @Column(name = "priority")
+    private String priority;
+
     @Column(name = "instructor_id")
     private Long instructorId;
 
