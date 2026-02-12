@@ -1,47 +1,18 @@
-.App {
-  text-align: center;
-}
+/* ========== GLOBAL RESET ========== */
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+* {
+  box-sizing: border-box;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-/* ========== GLOBAL LAYOUT ========== */
 
 html, body, #root {
   height: 100%;
   margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', 'Poppins', sans-serif;
+  background-color: #f4f6f9;
 }
+
+/* ========== APP LAYOUT STRUCTURE ========== */
 
 .app-wrapper {
   display: flex;
@@ -51,4 +22,91 @@ html, body, #root {
 
 .app-content {
   flex: 1;
+  padding: 20px;
+}
+
+/* ========== SMOOTH PAGE TRANSITION ========== */
+
+.fade-page {
+  animation: fadePage 0.4s ease-in-out;
+}
+
+@keyframes fadePage {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== GLOBAL BUTTON IMPROVEMENT ========== */
+
+button {
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ========== SCROLLBAR STYLING (Modern Touch) ========== */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+/* Sidebar base */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 70px; /* collapsed width */
+  background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+  transition: width 0.3s ease;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* Expand on hover */
+.sidebar:hover {
+  width: 220px;
+}
+
+/* Sidebar content */
+.sidebar .nav-item span {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Show text when expanded */
+.sidebar:hover .nav-item span {
+  opacity: 1;
+}
+
+/* Push main content */
+.main-content {
+  margin-left: 70px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar:hover ~ .main-content {
+  margin-left: 220px;
 }
