@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { getGradesByStudent, getCourses } from "../services/api";
+import { getCourses, getGradesByStudent, getStudentByUserId } from "../services/api";
 import "../styles/dashboard.css";
 import CountUp from "react-countup";
 
@@ -13,34 +13,45 @@ export default function DashboardPage() {
   const [grades, setGrades] = useState([]);
   const [averageGrade, setAverageGrade] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (user?.id) fetchData();
+    if (user?.id) {
+      fetchData();
+    }
   }, [user]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError("");
 
       const coursesRes = await getCourses();
       setCourses(coursesRes?.data || []);
 
-      const gradesRes = await getGradesByStudent(user.id);
+      // Grades API expects a studentId, not a userId.
+      const studentRes = await getStudentByUserId(user.id);
+      const studentId = studentRes?.data?.studentId;
+
+      if (!studentId) {
+        setGrades([]);
+        setAverageGrade(0);
+        setError("Student profile not found for this user.");
+        return;
+      }
+
+      const gradesRes = await getGradesByStudent(studentId);
       const gradesData = Array.isArray(gradesRes?.data) ? gradesRes.data : [];
 
       setGrades(gradesData);
 
-      const avg =
-        gradesData.length > 0
-          ? (
-              gradesData.reduce((sum, g) => sum + (Number(g.score) || 0), 0) /
-              gradesData.length
-            ).toFixed(1)
-          : 0;
+      const totalScore = gradesData.reduce((sum, grade) => sum + (Number(grade.score) || 0), 0);
+      const avg = gradesData.length > 0 ? Number((totalScore / gradesData.length).toFixed(1)) : 0;
 
       setAverageGrade(avg);
     } catch (error) {
       console.error("Dashboard fetch error:", error);
+      setError("Failed to load dashboard data.");
     } finally {
       setLoading(false);
     }
@@ -62,6 +73,8 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
+          {error && <div className="grades-alert mb-3">{error}</div>}
+
           <div className="welcome-banner">
             <div className="welcome-copy">
               <p className="welcome-kicker">Student Overview</p>

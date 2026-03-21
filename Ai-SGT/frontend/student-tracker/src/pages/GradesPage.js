@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   getStudents,
   getAssignments,
@@ -9,6 +9,11 @@ import {
 import StudentChart from "../components/StudentChart";
 import "../styles/grades.css";
 import { AuthContext } from "../context/AuthContext";
+
+function cleanId(raw) {
+  if (raw === null || raw === undefined) return "";
+  return raw.toString().trim().replace(/\.+$/g, "").replace(/[^\d]/g, "");
+}
 
 /**
  * GradesPage (robust)
@@ -32,10 +37,38 @@ export default function GradesPage() {
     score: ""
   });
 
+  const fetchGrades = useCallback(async (rawStudentId) => {
+    setMessage(null);
+    const studentIdClean = cleanId(rawStudentId);
+    if (!studentIdClean) {
+      setMessage("Please select a valid student to view grades.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // log exact URL for debugging
+      console.log(`Requesting grades for student -> /grades/student/${studentIdClean}`);
+      const res = await getGradesByStudent(studentIdClean);
+      const gradesData = Array.isArray(res.data) ? res.data : [];
+      setGrades(gradesData);
+
+      if (gradesData.length === 0) {
+        setMessage("No grades found for this student.");
+      }
+    } catch (err) {
+      console.error("Failed to fetch grades:", err);
+      setMessage("Failed to fetch grades. Check server & CORS.");
+      setGrades([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     // Load assignments for both roles
     getAssignments()
-      .then(r => setAssignments(r.data))
+      .then(r => setAssignments(Array.isArray(r.data) ? r.data : []))
       .catch(err => {
         console.error("Failed to load assignments", err);
         setMessage("Failed to load assignments from server.");
@@ -43,7 +76,7 @@ export default function GradesPage() {
 
     if (isTeacher) {
       getStudents()
-        .then(r => setStudents(r.data))
+        .then(r => setStudents(Array.isArray(r.data) ? r.data : []))
         .catch(err => {
           console.error("Failed to load students", err);
           setMessage("Failed to load students from server.");
@@ -64,13 +97,7 @@ export default function GradesPage() {
           setMessage("Failed to load student profile.");
         });
     }
-  }, [isTeacher, user]);
-
-  // Utility: clean ID strings (remove spaces, trailing dots, etc.)
-  function cleanId(raw) {
-    if (raw === null || raw === undefined) return "";
-    return raw.toString().trim().replace(/\.+$/g, "").replace(/[^\d]/g, "");
-  }
+  }, [fetchGrades, isTeacher, user]);
 
   const handleAddGrade = async (e) => {
     e.preventDefault();
@@ -103,34 +130,6 @@ export default function GradesPage() {
     } catch (err) {
       console.error("Error adding grade:", err);
       setMessage("Failed to add grade. Check server logs and connection.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchGrades = async (rawStudentId) => {
-    setMessage(null);
-    const studentIdClean = cleanId(rawStudentId);
-    if (!studentIdClean) {
-      setMessage("Please select a valid student to view grades.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // log exact URL for debugging
-      console.log(`Requesting grades for student -> /grades/student/${studentIdClean}`);
-      const res = await getGradesByStudent(studentIdClean);
-      setGrades(res.data || []);
-      if (!res.data || res.data.length === 0) {
-        setMessage("No grades found for this student.");
-      } else {
-        setMessage(null);
-      }
-    } catch (err) {
-      console.error("Failed to fetch grades:", err);
-      setMessage("Failed to fetch grades. Check server & CORS.");
-      setGrades([]);
     } finally {
       setLoading(false);
     }

@@ -13,11 +13,28 @@ public class AiService {
         this.repo = repo;
     }
 
+    /**
+     * Saves an AI prediction.
+     * 
+     * @param p the prediction to save
+     */
     public void savePrediction(AiPrediction p) {
+        if (p == null) {
+            throw new IllegalArgumentException("Prediction cannot be null");
+        }
         repo.save(p);
     }
 
+    /**
+     * Retrieves a prediction by student ID.
+     * 
+     * @param studentId the student ID
+     * @return the prediction if found, null otherwise
+     */
     public AiPrediction getPrediction(Long studentId) {
+        if (studentId == null) {
+            return null;
+        }
         return repo.findByStudentId(studentId).orElse(null);
     }
 }

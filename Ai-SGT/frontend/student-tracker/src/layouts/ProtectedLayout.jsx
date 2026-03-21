@@ -11,21 +11,29 @@ export default function ProtectedLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="app-shell">
-      <Sidebar
-        open={sidebarOpen}
-        onToggle={() => setSidebarOpen((v) => !v)}
-        onLogout={logout}
-        role={user?.role}
-      />
+    <div className="app-frame">
+      <div className="app-shell">
+        <Sidebar
+          open={sidebarOpen}
+          onToggle={() => setSidebarOpen((v) => !v)}
+          onLogout={logout}
+          role={user?.role}
+        />
 
-      <section className={`app-main ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
-        <Navbar />
-        <div className="app-content">
-          <Outlet />
-        </div>
-        <Footer />s
-      </section>
+        <section
+          className={`app-main ${
+            sidebarOpen ? "sidebar-open" : "sidebar-closed"
+          }`}
+        >
+          <Navbar />
+
+          <div className="app-content">
+            <Outlet />
+          </div>
+        </section>
+      </div>
+
+      <Footer />
     </div>
   );
 }

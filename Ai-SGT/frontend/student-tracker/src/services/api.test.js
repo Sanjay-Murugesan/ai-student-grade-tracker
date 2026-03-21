@@ -1,114 +1,114 @@
-import axios from 'axios';
-import * as api from '../services/api';
+import axios from "axios";
 
-jest.mock('axios');
+jest.mock("axios", () => {
+  const mockApiClient = {
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+    interceptors: {
+      request: {
+        use: jest.fn(),
+      },
+    },
+  };
 
-describe('API Service Tests', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
+  return {
+    create: jest.fn(() => mockApiClient),
+  };
+});
+
+import * as api from "../services/api";
+
+const mockApiClient = axios.create.mock.results[0].value;
+
+describe("API service", () => {
+  const requestInterceptor = mockApiClient.interceptors.request.use.mock.calls[0][0];
+
+  beforeEach(() => {
+    mockApiClient.get.mockReset();
+    mockApiClient.post.mockReset();
+    mockApiClient.put.mockReset();
+    mockApiClient.delete.mockReset();
+    localStorage.clear();
+  });
+
+  test("loginUser should call POST /api/v1/auth/login", async () => {
+    const mockResponse = { data: { token: "fake-token" } };
+    mockApiClient.post.mockResolvedValue(mockResponse);
+
+    const result = await api.loginUser("testuser", "password123", "STUDENT");
+
+    expect(mockApiClient.post).toHaveBeenCalledWith("/api/v1/auth/login", {
+      username: "testuser",
+      password: "password123",
+      role: "STUDENT",
     });
+    expect(result).toBe(mockResponse);
+  });
 
-    test('login should call POST /api/v1/auth/login', async () => {
-        const loginData = { username: 'testuser', password: 'password123' };
-        const mockResponse = { data: { token: 'fake-token', user: {} } };
+  test("getCourses should call GET /api/v1/courses", async () => {
+    const mockResponse = { data: [{ courseId: 1, courseName: "Java" }] };
+    mockApiClient.get.mockResolvedValue(mockResponse);
 
-        axios.post.mockResolvedValue(mockResponse);
+    const result = await api.getCourses();
 
-        // Note: This assumes your API has a login function
-        // Adjust based on your actual api.js implementation
-        const result = await api.login(loginData);
+    expect(mockApiClient.get).toHaveBeenCalledWith("/api/v1/courses");
+    expect(result).toBe(mockResponse);
+  });
 
-        expect(axios.post).toHaveBeenCalledWith('/api/v1/auth/login', loginData);
-        expect(result).toEqual(mockResponse.data);
-    });
+  test("addAssignment should call POST /api/v1/assignments", async () => {
+    const payload = { title: "Assignment 1", maxMarks: 100 };
+    const mockResponse = { data: { assignmentId: 1, ...payload } };
+    mockApiClient.post.mockResolvedValue(mockResponse);
 
-    test('getUsers should call GET /api/v1/users', async () => {
-        const mockResponse = { data: [{ id: 1, username: 'user1' }] };
+    const result = await api.addAssignment(payload);
 
-        axios.get.mockResolvedValue(mockResponse);
+    expect(mockApiClient.post).toHaveBeenCalledWith("/api/v1/assignments", payload);
+    expect(result).toBe(mockResponse);
+  });
 
-        const result = await api.getUsers();
+  test("updateGrade should call PUT /api/v1/grades/:id", async () => {
+    const payload = { score: 90, feedback: "Excellent" };
+    const mockResponse = { data: { gradeId: 1, ...payload } };
+    mockApiClient.put.mockResolvedValue(mockResponse);
 
-        expect(axios.get).toHaveBeenCalledWith('/api/v1/users');
-        expect(result).toEqual(mockResponse.data);
-    });
+    const result = await api.updateGrade(1, payload);
 
-    test('createUser should call POST /api/v1/users', async () => {
-        const userData = { username: 'newuser', email: 'new@example.com' };
-        const mockResponse = { data: { id: 2, ...userData } };
+    expect(mockApiClient.put).toHaveBeenCalledWith("/api/v1/grades/1", payload);
+    expect(result).toBe(mockResponse);
+  });
 
-        axios.post.mockResolvedValue(mockResponse);
+  test("getPredictionHistory should call GET /ai/prediction/:studentId", async () => {
+    const mockResponse = { data: { studentId: 1, predictedScore: 85 } };
+    mockApiClient.get.mockResolvedValue(mockResponse);
 
-        const result = await api.createUser(userData);
+    const result = await api.getPredictionHistory(1);
 
-        expect(axios.post).toHaveBeenCalledWith('/api/v1/users', userData);
-        expect(result).toEqual(mockResponse.data);
-    });
+    expect(mockApiClient.get).toHaveBeenCalledWith("/ai/prediction/1");
+    expect(result).toBe(mockResponse);
+  });
 
-    test('getCourses should call GET /api/v1/courses', async () => {
-        const mockResponse = { data: [{ courseId: 1, courseName: 'Java' }] };
+  test("request interceptor should add Authorization header when token exists", () => {
+    localStorage.setItem("token", "abc123");
 
-        axios.get.mockResolvedValue(mockResponse);
+    const result = requestInterceptor({ headers: {} });
 
-        const result = await api.getCourses();
+    expect(result.headers.Authorization).toBe("Bearer abc123");
+  });
 
-        expect(axios.get).toHaveBeenCalledWith('/api/v1/courses');
-        expect(result).toEqual(mockResponse.data);
-    });
+  test("request interceptor should safely handle missing headers object", () => {
+    localStorage.removeItem("token");
 
-    test('getAssignments should call GET /api/v1/assignments', async () => {
-        const mockResponse = { data: [{ assignmentId: 1, title: 'Assignment 1' }] };
+    const result = requestInterceptor({});
 
-        axios.get.mockResolvedValue(mockResponse);
+    expect(result.headers).toEqual({});
+  });
 
-        const result = await api.getAssignments();
+  test("API calls should propagate errors", async () => {
+    const error = new Error("Network error");
+    mockApiClient.get.mockRejectedValue(error);
 
-        expect(axios.get).toHaveBeenCalledWith('/api/v1/assignments');
-        expect(result).toEqual(mockResponse.data);
-    });
-
-    test('getGrades should call GET /api/v1/grades', async () => {
-        const mockResponse = { data: [{ gradeId: 1, score: 85 }] };
-
-        axios.get.mockResolvedValue(mockResponse);
-
-        const result = await api.getGrades();
-
-        expect(axios.get).toHaveBeenCalledWith('/api/v1/grades');
-        expect(result).toEqual(mockResponse.data);
-    });
-
-    test('updateGrade should call PUT /api/v1/grades/:id', async () => {
-        const gradeData = { score: 90, feedback: 'Excellent' };
-        const mockResponse = { data: { gradeId: 1, ...gradeData } };
-
-        axios.put.mockResolvedValue(mockResponse);
-
-        const result = await api.updateGrade(1, gradeData);
-
-        expect(axios.put).toHaveBeenCalledWith('/api/v1/grades/1', gradeData);
-        expect(result).toEqual(mockResponse.data);
-    });
-
-    test('getPredictions should call GET /ai/predict/:studentId', async () => {
-        const mockResponse = { data: { studentId: 1, predictedScore: 85, riskLevel: 'LOW' } };
-
-        axios.get.mockResolvedValue(mockResponse);
-
-        const result = await api.getPredictions(1);
-
-        expect(axios.get).toHaveBeenCalledWith('/ai/predict/1');
-        expect(result).toEqual(mockResponse.data);
-    });
-
-    test('API should handle errors gracefully', async () => {
-        const error = new Error('Network error');
-        axios.get.mockRejectedValue(error);
-
-        try {
-            await api.getUsers();
-        } catch (e) {
-            expect(e.message).toBe('Network error');
-        }
-    });
+    await expect(api.getGrades()).rejects.toThrow("Network error");
+  });
 });

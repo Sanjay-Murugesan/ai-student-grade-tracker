@@ -7,14 +7,21 @@ import "../pages/ProfilePage.css";
 export default function ProfilePage() {
   const { user, logout } = useContext(AuthContext);
   const [profile, setProfile] = useState({});
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function fetchData() {
-      const res = await getProfile();
-      setProfile(res.data);
+      if (!user?.id) return;
+      try {
+        const res = await getProfile(user.id);
+        setProfile(res.data || {});
+      } catch (err) {
+        console.error("Profile fetch error:", err);
+        setError("Unable to load profile data.");
+      }
     }
     fetchData();
-  }, []);
+  }, [user?.id]);
 
   const handleLogout = () => {
     logout();
@@ -35,6 +42,12 @@ export default function ProfilePage() {
         </div>
 
         <div className="profile-info-grid">
+          {error && (
+            <div>
+              <label>Status</label>
+              <p>{error}</p>
+            </div>
+          )}
           <div>
             <label>Username</label>
             <p>{profile.username}</p>

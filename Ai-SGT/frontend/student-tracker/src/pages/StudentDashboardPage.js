@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { getAssignments, getGradesByStudent, getStudentByUserId } from "../services/api";
 import "../styles/dashboard.css";
@@ -7,57 +7,65 @@ import CountUp from "react-countup";
 export default function StudentDashboardPage() {
   const { user } = useContext(AuthContext);
   const [assignments, setAssignments] = useState([]);
-  const [grades, setGrades] = useState([]);
   const [averageGrade, setAverageGrade] = useState(0);
   const [loading, setLoading] = useState(true);
   const [studentId, setStudentId] = useState(null);
+
+  const fetchAssignments = useCallback(async () => {
+    const assignmentsRes = await getAssignments();
+    setAssignments(Array.isArray(assignmentsRes?.data) ? assignmentsRes.data : []);
+  }, []);
+
+  const fetchGrades = useCallback(async (studentIdValue) => {
+    const gradesRes = await getGradesByStudent(studentIdValue);
+    const gradesData = Array.isArray(gradesRes?.data) ? gradesRes.data : [];
+    const average =
+      gradesData.length > 0
+        ? Number(
+            (
+              gradesData.reduce((sum, grade) => sum + (Number(grade.score) || 0), 0) /
+              gradesData.length
+            ).toFixed(1)
+          )
+        : 0;
+
+    setAverageGrade(average);
+  }, []);
+
+  const loadStudentData = useCallback(async (userId) => {
+    try {
+      setLoading(true);
+      const studentRes = await getStudentByUserId(userId);
+      const student = studentRes?.data;
+
+      if (student?.studentId) {
+        setStudentId(student.studentId);
+        await Promise.all([fetchAssignments(), fetchGrades(student.studentId)]);
+      } else {
+        setStudentId(null);
+        setAssignments([]);
+        setAverageGrade(0);
+      }
+    } catch (error) {
+      console.error("Student dashboard fetch error:", error);
+      setStudentId(null);
+      setAssignments([]);
+      setAverageGrade(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchAssignments, fetchGrades]);
 
   useEffect(() => {
     if (user?.id) {
       loadStudentData(user.id);
     }
-  }, [user]);
+  }, [loadStudentData, user]);
 
-  const loadStudentData = async (userId) => {
-    try {
-      setLoading(true);
-      const studentRes = await getStudentByUserId(userId);
-      const student = studentRes?.data;
-      if (student?.studentId) {
-        setStudentId(student.studentId);
-        await Promise.all([fetchAssignments(), fetchGrades(student.studentId)]);
-      } else {
-        setAssignments([]);
-        setGrades([]);
-      }
-    } catch (error) {
-      console.error("Student dashboard fetch error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAssignments = async () => {
-    const assignmentsRes = await getAssignments();
-    setAssignments(assignmentsRes?.data || []);
-  };
-
-  const fetchGrades = async (studentIdValue) => {
-    const gradesRes = await getGradesByStudent(studentIdValue);
-    const gradesData = Array.isArray(gradesRes?.data) ? gradesRes.data : [];
-    setGrades(gradesData);
-
-    const avg =
-      gradesData.length > 0
-        ? (
-            gradesData.reduce((sum, g) => sum + (Number(g.score) || 0), 0) /
-            gradesData.length
-          ).toFixed(1)
-        : 0;
-    setAverageGrade(avg);
-  };
-
-  const upcomingAssignments = assignments.filter((a) => new Date(a.dueDate) > new Date()).length;
+  const upcomingAssignments = useMemo(
+    () => assignments.filter((assignment) => new Date(assignment.dueDate) > new Date()).length,
+    [assignments]
+  );
 
   return (
     <div className="dashboard-page">

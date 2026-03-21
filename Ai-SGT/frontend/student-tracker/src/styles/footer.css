@@ -12,14 +12,14 @@
   padding-top: 56px;
   border-top: 1px solid rgba(20, 184, 166, 0.25);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif);
 }
 
 /* ---------- FOOTER CONTENT GRID ---------- */
 .footer-content {
-  max-width: 1400px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 40px 50px;
+  padding: 0 36px 42px;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 48px;
@@ -54,10 +54,10 @@
 }
 
 .logo-text {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #e5e7eb;
-  letter-spacing: 1.5px;
+  letter-spacing: 0.8px;
 }
 
 .about-text {
@@ -154,7 +154,7 @@
 .footer-bottom {
   background: rgba(0, 0, 0, 0.35);
   border-top: 1px solid rgba(20, 184, 166, 0.15);
-  padding: 24px 20px;
+  padding: 20px 20px;
   text-align: center;
 }
 

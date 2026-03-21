@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./context/ProtectedRoute";
 import RoleRoute from "./context/RoleRoute";
+import "./App.css";
 
 import ProtectedLayout from "./layouts/ProtectedLayout";
 

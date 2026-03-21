@@ -46,13 +46,13 @@ export default function Footer() {
               <a href="/profile">Profile</a>
             </li>
             <li>
-              <a href="/settings">Settings</a>
+              <a href="/profile">Settings</a>
             </li>
             <li>
-              <a href="/help">Help Center</a>
+              <a href="https://example.com/help">Help Center</a>
             </li>
             <li>
-              <a href="/contact">Contact</a>
+              <a href="mailto:support@studenttracker.app">Contact</a>
             </li>
           </ul>
         </div>

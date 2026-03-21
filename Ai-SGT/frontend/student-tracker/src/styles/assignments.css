@@ -82,7 +82,6 @@
   position: relative;
   overflow: hidden;
 }
-
 .form-modern::before {
   content: '';
   position: absolute;

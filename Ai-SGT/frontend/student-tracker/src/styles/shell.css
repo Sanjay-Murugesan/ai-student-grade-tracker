@@ -16,8 +16,14 @@
 
 .app-shell {
   display: flex;
-  min-height: 100vh;
   background: var(--paper);
+  flex: 1;
+}
+
+.app-frame {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .app-sidebar {
@@ -157,8 +163,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background: radial-gradient(circle at top, rgba(20, 184, 166, 0.08), transparent 55%);
+  background: radial-gradient(
+    circle at top,
+    rgba(20, 184, 166, 0.08),
+    transparent 55%
+  );
 }
 
 .app-content {
@@ -179,7 +188,9 @@
 
 @media (max-width: 768px) {
   .app-shell {
-    position: relative;
+    display: flex;
+    min-height: 100vh;
+    background: var(--paper);
   }
 
   .app-sidebar {
@@ -197,5 +208,6 @@
 
   .app-content {
     padding: 22px;
+    padding-bottom: 28px;
   }
 }

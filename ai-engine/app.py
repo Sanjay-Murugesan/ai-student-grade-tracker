@@ -19,8 +19,20 @@ def predict(data: MarksInput):
     avg = float(np.mean(marks))
     prediction = model.predict([[avg]])[0]
 
+    # Determine risk level based on prediction
+    if prediction < 50:
+        risk = "High Risk"
+        suggestion = "Student needs immediate attention and additional support."
+    elif prediction < 70:
+        risk = "Medium Risk"
+        suggestion = "Student should focus on improving study habits."
+    else:
+        risk = "Low Risk"
+        suggestion = "Student is performing well, continue current efforts."
+
     return {
         "studentId": data.studentId,
-        "average": avg,
-        "prediction": prediction
+        "predictedScore": prediction,
+        "risk": risk,
+        "suggestion": suggestion
     }

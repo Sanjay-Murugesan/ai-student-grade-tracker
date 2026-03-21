@@ -15,13 +15,63 @@ public class StudentService {
         this.repo = repo;
     }
 
-    public Student save(Student s) { return repo.save(s); }
-    public List<Student> getAll() { return repo.findAll(); }
-    public Student getById(Long id) { return repo.findById(id).orElse(null); }
+    /**
+        
+    
 
+     * Saves a student entity to th
+         database.
+    
+
+     * @param s the student to save
+        
+    
+     * @return the saved student
+     */
+    public Student save(Student s) {
+        if  (s == null)
+            {
+            throw new IllegalArgumentException("Student cannot be null");
+        }
+        return repo.save(s);
+    }
+
+    /**
+     * Retrieves all students from the database.
+     * @return list of all students
+     */
+    public List<Student> getAll()
+        {
+    
+        return repo.findAll();
+    }
+
+    /**
+     * Retrieves a student by ID.
+     * @param id the student ID
+     * @return the student if found, null otherwise
+     */
+    public Student getById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        return repo.findById(id).orElse(null);
+    }
+
+    /**
+     * Updates an existing student.
+     * @param id the student ID
+     * @param s the updated student data
+     * @return the updated student, or null if not found
+     */
     public Student update(Long id, Student s) {
+        if (id == null || s == null) {
+            return null;
+        }
         Student ex = getById(id);
-        if(ex == null) return null;
+        if (ex == null) {
+            return null;
+        }
 
         ex.setName(s.getName());
         ex.setEmail(s.getEmail());
@@ -31,5 +81,14 @@ public class StudentService {
         return repo.save(ex);
     }
 
-    public void delete(Long id) { repo.deleteById(id); }
+    /**
+     * Deletes a student by ID.
+     * @param id the student ID
+     */
+    public void delete(Long id) {
+        if (id == null) {
+            return;
+        }
+        repo.deleteById(id);
+    }
 }

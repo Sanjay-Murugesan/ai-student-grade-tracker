@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, { useContext, useMemo, useState, useRef, useEffect } from "react";
 import { getAssignments, addAssignment, deleteAssignment, updateAssignment } from "../services/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,28 +8,22 @@ import { AuthContext } from "../context/AuthContext";
 export default function AssignmentsPage() {
   const { user } = useContext(AuthContext);
   const isTeacher = user?.role === "INSTRUCTOR";
-  const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [stats, setStats] = useState({
-    total: 0,
-    upcoming: 0,
-    overdue: 0,
-    averageMarks: 0,
-    highestMarks: 0
-  });
-  const [filter, setFilter] = useState('all'); // 'all', 'upcoming', 'overdue'
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const [form, setForm] = useState({
+  const EMPTY_FORM = {
     title: "",
     description: "",
     dueDate: "",
     maxMarks: "",
     priority: "medium"
-  });
+  };
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [filter, setFilter] = useState('all'); // 'all', 'upcoming', 'overdue'
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const [form, setForm] = useState(EMPTY_FORM);
 
   const formRef = useRef(null);
 
@@ -38,11 +32,7 @@ export default function AssignmentsPage() {
     fetchAssignments();
   }, []);
 
-  useEffect(() => {
-    calculateStats();
-  }, [assignments]);
-
-  const calculateStats = () => {
+  const stats = useMemo(() => {
     const now = new Date();
     const upcoming = assignments.filter(a => new Date(a.dueDate) > now).length;
     const overdue = assignments.filter(a => new Date(a.dueDate) < now).length;
@@ -50,20 +40,20 @@ export default function AssignmentsPage() {
     const highestMarks = assignments.reduce((max, a) => Math.max(max, Number(a.maxMarks || 0)), 0);
     const averageMarks = assignments.length > 0 ? Math.round(totalMarks / assignments.length) : 0;
 
-    setStats({
+    return {
       total: assignments.length,
       upcoming,
       overdue,
       averageMarks,
       highestMarks
-    });
-  };
+    };
+  }, [assignments]);
 
   const fetchAssignments = () => {
     setLoading(true);
     getAssignments()
       .then(res => {
-        setAssignments(res.data);
+        setAssignments(Array.isArray(res.data) ? res.data : []);
         toast.success("Assignments loaded successfully!");
       })
       .catch(err => {
@@ -92,7 +82,7 @@ export default function AssignmentsPage() {
 
     const maxMarks = Number(form.maxMarks);
     if (isNaN(maxMarks) || maxMarks < 0) {
-      toast.error("Max marks must be a positive number");
+      toast.error("Max marks must be 0 or greater");
       setSubmitting(false);
       return;
     }
@@ -110,7 +100,7 @@ export default function AssignmentsPage() {
       updateAssignment(editingId, assignmentData)
         .then(() => {
           toast.success("Assignment updated successfully!");
-          setForm({ title: "", description: "", dueDate: "", maxMarks: "", priority: "medium" });
+          setForm(EMPTY_FORM);
           setEditingId(null);
           fetchAssignments();
           setShowForm(false);
@@ -125,7 +115,7 @@ export default function AssignmentsPage() {
       addAssignment(assignmentData)
         .then(() => {
           toast.success("Assignment added successfully!");
-          setForm({ title: "", description: "", dueDate: "", maxMarks: "", priority: "medium" });
+          setForm(EMPTY_FORM);
           fetchAssignments();
           setShowForm(false);
         })
@@ -139,10 +129,10 @@ export default function AssignmentsPage() {
 
   const handleEdit = (assignment) => {
     setForm({
-      title: assignment.title,
-      description: assignment.description,
-      dueDate: assignment.dueDate.split('T')[0],
-      maxMarks: assignment.maxMarks,
+      title: assignment.title || "",
+      description: assignment.description || "",
+      dueDate: assignment.dueDate ? assignment.dueDate.split('T')[0] : "",
+      maxMarks: assignment.maxMarks ?? "",
       priority: assignment.priority || "medium"
     });
     setEditingId(assignment.assignmentId);
@@ -167,7 +157,7 @@ export default function AssignmentsPage() {
   };
 
   const handleCancel = () => {
-    setForm({ title: "", description: "", dueDate: "", maxMarks: "", priority: "medium" });
+    setForm(EMPTY_FORM);
     setEditingId(null);
     setShowForm(false);
   };
@@ -175,6 +165,8 @@ export default function AssignmentsPage() {
   const formatDate = (dateString) => {
     if (!dateString) return "No due date";
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return "Invalid date";
+
     const now = new Date();
     const diffTime = date - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -206,15 +198,21 @@ export default function AssignmentsPage() {
   };
 
   const getDaysRemaining = (dueDate) => {
+    if (!dueDate) return 0;
+
     const due = new Date(dueDate);
+    if (Number.isNaN(due.getTime())) return 0;
+
     const now = new Date();
     const diffTime = due - now;
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const filteredAssignments = assignments.filter(assignment => {
-    const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const normalizedSearch = searchTerm.toLowerCase();
+    const title = (assignment.title || "").toLowerCase();
+    const description = (assignment.description || "").toLowerCase();
+    const matchesSearch = title.includes(normalizedSearch) || description.includes(normalizedSearch);
     
     if (filter === 'all') return matchesSearch;
     if (filter === 'upcoming') return matchesSearch && new Date(assignment.dueDate) > new Date();
@@ -260,7 +258,7 @@ export default function AssignmentsPage() {
               onClick={() => {
                 setShowForm(!showForm);
                 setEditingId(null);
-                setForm({ title: "", description: "", dueDate: "", maxMarks: "", priority: "medium" });
+                setForm(EMPTY_FORM);
               }}
             >
               <i className="bi bi-plus-lg"></i>

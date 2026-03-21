@@ -9,6 +9,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
+/**
+ * Controller for AI prediction endpoints.
+ */
 @RestController
 @RequestMapping("/ai")
 @CrossOrigin("*")
@@ -22,17 +25,27 @@ public class AiController {
         this.aiService = aiService;
     }
 
+    /**
+     * Predicts student performance based on previous grades.
+     * 
+     * @param studentId the student ID
+     * @return the prediction response
+     */
     @GetMapping("/predict/{studentId}")
     public ResponseEntity<?> predict(@PathVariable Long studentId) {
+        if (studentId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Student ID cannot be null"));
+        }
 
         List<Double> scores = gradeService.getByStudent(studentId)
-                                          .stream()
-                                          .map(g -> g.getScore())
-                                          .toList();
+                .stream()
+                .map(g -> g.getScore())
+                .toList();
 
-        if(scores.isEmpty())
+        if (scores.isEmpty()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "No marks found for this student"));
+        }
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -45,10 +58,16 @@ public class AiController {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<Map> response =
-                restTemplate.postForEntity("http://localhost:8000/predict", entity, Map.class);
+        ResponseEntity<Map> response = restTemplate.postForEntity("http://localhost:8000/predict",
+                entity, Map.class);
 
-        Map<String, Object> result = response.getBody();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.getBody();
+
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to get prediction from AI service"));
+        }
 
         AiPrediction p = new AiPrediction();
         p.setStudentId(studentId);
@@ -61,8 +80,17 @@ public class AiController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * Retrieves saved prediction for a student.
+     * 
+     * @param studentId the student ID
+     * @return the saved prediction
+     */
     @GetMapping("/prediction/{studentId}")
     public AiPrediction getSaved(@PathVariable Long studentId) {
+        if (studentId == null) {
+            return null;
+        }
         return aiService.getPrediction(studentId);
     }
 }
