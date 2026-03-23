@@ -33,6 +33,18 @@ const Icon = ({ name }) => {
           <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5z" />
         </svg>
       );
+    case "notifications":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
+          <path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm6-6V11a6 6 0 1 0-12 0v5L4 18v1h16v-1l-2-2z" />
+        </svg>
+      );
+    case "analytics":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
+          <path d="M5 20h14v-2H5v2zm1-4h2V8H6v8zm5 0h2V4h-2v12zm5 0h2v-6h-2v6z" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -40,13 +52,21 @@ const Icon = ({ name }) => {
 
 export default function Sidebar({ open, onToggle, onLogout, role }) {
   const dashboardRoute = role === "INSTRUCTOR" ? "/teacher/dashboard" : "/student/dashboard";
-  const menuItems = [
+  const commonItems = [
     { label: "Dashboard", route: dashboardRoute, icon: "dashboard" },
     { label: "Assignments", route: "/assignments", icon: "assignments" },
     { label: "Grades", route: "/grades", icon: "grades" },
-    { label: "AI Predictions", route: "/ai-predict", icon: "ai" },
-    { label: "Profile", route: "/profile", icon: "profile" }
+    { label: "AI Predict", route: "/ai-predict", icon: "ai" },
+    { label: "AI Insights", route: "/ai-insights", icon: "analytics" },
+    { label: "Notifications", route: "/notifications", icon: "notifications" },
   ];
+
+  const instructorItems =
+    role === "INSTRUCTOR"
+      ? [{ label: "Course Analytics", route: "/course-analytics", icon: "analytics" }]
+      : [];
+
+  const menuItems = [...commonItems, ...instructorItems, { label: "Profile", route: "/profile", icon: "profile" }];
 
   return (
     <aside className={`app-sidebar ${open ? "open" : "closed"}`}>
