@@ -31,6 +31,9 @@ public class Student {
     @Column(name = "gpa")
     private Double gpa = 0.0;
 
+    @Column(name = "attendance_percent")
+    private Double attendancePercent = 0.0;
+
     @PrePersist
     protected void onCreate() {
         enrollmentDate = LocalDateTime.now();

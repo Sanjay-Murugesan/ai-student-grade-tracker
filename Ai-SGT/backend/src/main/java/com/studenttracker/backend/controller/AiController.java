@@ -13,7 +13,7 @@ import java.util.*;
  * Controller for AI prediction endpoints.
  */
 @RestController
-@RequestMapping("/ai")
+@RequestMapping({"/ai", "/api/ai"})
 @CrossOrigin("*")
 public class AiController {
 

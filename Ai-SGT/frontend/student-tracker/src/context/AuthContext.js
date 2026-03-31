@@ -1,46 +1,64 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
+import { loginUser, registerUser } from "../services/api";
 
-export const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [token, setToken] = useState(localStorage.getItem("token"));
+const readStoredAuth = () => ({
+  token: localStorage.getItem("token"),
+  role: localStorage.getItem("role"),
+  userId: localStorage.getItem("userId"),
+  name: localStorage.getItem("name"),
+});
 
-    useEffect(() => {
-        // Check if token exists on mount
-        const storedToken = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
+export function AuthProvider({ children }) {
+  const [auth, setAuth] = useState(readStoredAuth);
 
-        if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
-    }, []);
-
-    const login = (userData, authToken) => {
-        setUser(userData);
-        setToken(authToken);
-        localStorage.setItem("token", authToken);
-        localStorage.setItem("user", JSON.stringify(userData));
+  const persistAuth = (payload) => {
+    const next = {
+      token: payload.token,
+      role: payload.role,
+      userId: String(payload.userId),
+      name: payload.name,
     };
 
-    const logout = () => {
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-    };
+    localStorage.setItem("token", next.token);
+    localStorage.setItem("role", next.role);
+    localStorage.setItem("userId", next.userId);
+    localStorage.setItem("name", next.name);
+    setAuth(next);
+    return next;
+  };
 
-    const value = {
-        user,
-        token,
-        loading,
-        login,
-        logout,
-        isAuthenticated: !!token
-    };
+  const login = async (email, password) => {
+    const { data } = await loginUser(email, password);
+    return persistAuth(data);
+  };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  const register = async (payload) => {
+    const { data } = await registerUser(payload);
+    return persistAuth(data);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("name");
+    setAuth({ token: null, role: null, userId: null, name: null });
+  };
+
+  const value = {
+    ...auth,
+    isAuthenticated: Boolean(auth.token),
+    login,
+    register,
+    logout,
+    isStudent: () => auth.role === "STUDENT",
+    isTeacher: () => auth.role === "TEACHER",
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export const useAuth = () => useContext(AuthContext);
+export { AuthContext };

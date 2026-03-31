@@ -1,6 +1,7 @@
 package com.studenttracker.backend.service;
 
 import com.studenttracker.backend.entity.Student;
+import com.studenttracker.backend.exception.ResourceNotFoundException;
 import com.studenttracker.backend.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,10 @@ public class StudentService {
     }
 
     public Student getById(Long id) {
-        return repo.findById(id).orElse(null);
+        if (id == null) {
+            throw new ResourceNotFoundException("Student not found");
+        }
+        return repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student not found"));
     }
 
     public Optional<Student> getByUserId(Long userId) {
@@ -51,5 +55,16 @@ public class StudentService {
 
     public void delete(Long id) {
         repo.deleteById(id);
+    }
+
+    public List<Student> getStudentsByInstructorId(Long instructorId) {
+        return repo.findAll();
+    }
+
+    public Optional<Student> getByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return Optional.empty();
+        }
+        return repo.findByEmail(email);
     }
 }

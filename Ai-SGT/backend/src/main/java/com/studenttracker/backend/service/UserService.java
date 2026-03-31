@@ -98,7 +98,7 @@ public class UserService {
             user.setEmail(userDetails.getEmail());
         }
         if (userDetails.getPassword() != null) {
-            user.setPassword(userDetails.getPassword());
+            user.setPasswordHash(userDetails.getPassword());
         }
         if (userDetails.getRole() != null) {
             user.setRole(userDetails.getRole());

@@ -1,39 +1,37 @@
-import React, { useContext, useState } from "react";
-import { Outlet } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import React, { useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { AuthContext } from "../context/AuthContext";
-import "../styles/shell.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedLayout() {
-  const { logout, user } = useContext(AuthContext);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    auth.logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
-    <div className="app-frame">
-      <div className="app-shell">
-        <Sidebar
-          open={sidebarOpen}
-          onToggle={() => setSidebarOpen((v) => !v)}
-          onLogout={logout}
-          role={user?.role}
-        />
-
-        <section
-          className={`app-main ${
-            sidebarOpen ? "sidebar-open" : "sidebar-closed"
-          }`}
-        >
-          <Navbar />
-
-          <div className="app-content">
-            <Outlet />
+    <div className="app-shell">
+      <Sidebar
+        open={sidebarOpen}
+        onToggle={() => setSidebarOpen((current) => !current)}
+        onLogout={handleLogout}
+        role={auth.role}
+        name={auth.name}
+      />
+      <main className={`app-main ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+        <div className="topbar">
+          <div>
+            <p className="eyebrow">Placement Ready Workspace</p>
+            <h1>Student Grade Tracker</h1>
           </div>
-        </section>
-      </div>
-
-      <Footer />
+          <div className="topbar-chip">{auth.role}</div>
+        </div>
+        <Outlet />
+      </main>
     </div>
   );
 }

@@ -23,7 +23,16 @@ public class Grade {
     @Column(name = "assignment_id")
     private Long assignmentId;
 
+    @Column(name = "course_id")
+    private Long courseId;
+
     private Double score;
+
+    @Column(name = "max_score")
+    private Double maxScore = 100.0;
+
+    @Column(name = "grade_type")
+    private String gradeType;
 
     @Column(length = 1000)
     private String feedback;

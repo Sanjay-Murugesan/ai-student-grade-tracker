@@ -2,7 +2,6 @@ package com.studenttracker.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,7 +23,7 @@ public class Assignment {
     private String description;
 
     @Column(name = "due_date")
-    private LocalDate dueDate;
+    private LocalDateTime dueDate;
 
     @Column(name = "max_marks")
     private Integer maxMarks;
@@ -37,6 +36,11 @@ public class Assignment {
 
     @Column(name = "course_id")
     private Long courseId;
+
+    @Column(nullable = false)
+    private Boolean published = false;
+
+    private Double weightage;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

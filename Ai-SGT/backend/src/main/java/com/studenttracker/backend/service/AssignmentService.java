@@ -97,4 +97,8 @@ public class AssignmentService {
         }
         return repo.findByCourseId(courseId);
     }
+
+    public List<Assignment> getPublishedAssignments() {
+        return repo.findByPublishedTrue();
+    }
 }

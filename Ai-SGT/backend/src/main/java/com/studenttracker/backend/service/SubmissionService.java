@@ -1,10 +1,12 @@
 package com.studenttracker.backend.service;
 
+import com.studenttracker.backend.dto.GradeSubmissionRequest;
 import com.studenttracker.backend.entity.Submission;
+import com.studenttracker.backend.entity.SubmissionStatus;
 import com.studenttracker.backend.repository.SubmissionRepository;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Service;
 
 @Service
 public class SubmissionService {
@@ -108,6 +110,12 @@ public class SubmissionService {
         if (submissionDetails.getFilePath() != null) {
             submission.setFilePath(submissionDetails.getFilePath());
         }
+        if (submissionDetails.getStatus() != null) {
+            submission.setStatus(submissionDetails.getStatus());
+        }
+        if (submissionDetails.getFeedback() != null) {
+            submission.setFeedback(submissionDetails.getFeedback());
+        }
 
         return submissionRepository.save(submission);
     }
@@ -122,5 +130,20 @@ public class SubmissionService {
             return;
         }
         submissionRepository.deleteById(id);
+    }
+
+    public List<Submission> getUngradedSubmissions() {
+        return submissionRepository.findAll().stream()
+                .filter(submission -> submission.getStatus() == SubmissionStatus.SUBMITTED
+                        || submission.getStatus() == SubmissionStatus.LATE)
+                .toList();
+    }
+
+    public Submission gradeSubmission(Long id, GradeSubmissionRequest request) {
+        Submission submission = submissionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Submission not found"));
+        submission.setFeedback(request.getFeedback());
+        submission.setStatus(SubmissionStatus.GRADED);
+        return submissionRepository.save(submission);
     }
 }

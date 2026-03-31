@@ -1,77 +1,113 @@
-.app-sidebar {
-  position: fixed;
-  left: 0;
+.sidebar {
+  position: sticky;
   top: 0;
-  height: 100vh;
-  width: 70px;
-  background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
-  transition: width 0.3s ease;
-  overflow: hidden;
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(18, 18, 28, 0.98), rgba(10, 10, 15, 0.98));
+  border-right: 1px solid rgba(132, 82, 255, 0.18);
+  padding: 24px 18px;
   display: flex;
   flex-direction: column;
-  z-index: 1000;
+  gap: 24px;
 }
 
-.app-sidebar:hover {
-  width: 220px;
+.sidebar.expanded {
+  width: 280px;
 }
 
-.brand {
-  padding: 20px;
+.sidebar.collapsed {
+  width: 92px;
+}
+
+.sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: white;
+  gap: 14px;
 }
 
-.brand-sub {
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.brand-kicker {
+  color: #71f6ff;
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
 }
 
-.app-sidebar:hover .brand-sub {
-  opacity: 1;
+.sidebar-brand h2 {
+  margin: 0;
+  color: #fff;
+}
+
+.toggle-button,
+.logout-button,
+.sidebar-link {
+  border: 1px solid rgba(113, 246, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: #eef1ff;
+  border-radius: 16px;
+  transition: 0.2s ease;
+}
+
+.toggle-button,
+.logout-button {
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.toggle-button:hover,
+.logout-button:hover,
+.sidebar-link:hover,
+.sidebar-link.active {
+  background: linear-gradient(135deg, rgba(132, 82, 255, 0.22), rgba(113, 246, 255, 0.14));
+  border-color: rgba(113, 246, 255, 0.35);
 }
 
 .sidebar-nav {
-  flex: 1;
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 12px 18px;
-  color: #cfd8dc;
   text-decoration: none;
-  transition: 0.3s;
-}
-
-.sidebar-link:hover {
-  background: rgba(255,255,255,0.1);
-  border-radius: 8px;
-}
-
-.link-label {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.app-sidebar:hover .link-label {
-  opacity: 1;
+  padding: 14px 16px;
+  font-weight: 600;
+  text-align: left;
 }
 
 .sidebar-footer {
-  padding: 20px;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.logout-btn {
-  background: none;
-  border: none;
-  color: #cfd8dc;
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  cursor: pointer;
+.profile-name {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.role-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.role-pill.student {
+  background: rgba(113, 246, 255, 0.15);
+  color: #71f6ff;
+}
+
+.role-pill.teacher {
+  background: rgba(132, 82, 255, 0.18);
+  color: #cdb4ff;
+}
+
+@media (max-width: 960px) {
+  .sidebar {
+    position: fixed;
+    z-index: 20;
+    inset: 0 auto 0 0;
+  }
 }

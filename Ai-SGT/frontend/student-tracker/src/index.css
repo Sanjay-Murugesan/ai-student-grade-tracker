@@ -1,32 +1,21 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
-  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
-  --bg-app: #f3f7f8;
-  --text-main: #132228;
+  color-scheme: dark;
+  font-family: "Inter", sans-serif;
 }
 
-body {
-  margin: 0;
-  font-family: var(--font-body);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: var(--bg-app);
-  color: var(--text-main);
+body,
+button,
+input,
+select,
+textarea {
+  font-family: "Inter", sans-serif;
 }
 
 h1,
 h2,
 h3,
-h4,
-h5,
-h6,
-.page-title,
-.brand-mark {
-  font-family: var(--font-display);
-}
-
-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+h4 {
+  font-family: "Space Grotesk", sans-serif;
 }

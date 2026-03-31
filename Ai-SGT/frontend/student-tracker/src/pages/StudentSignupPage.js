@@ -3,118 +3,136 @@ import { useNavigate, Link } from "react-router-dom";
 import { signupUser } from "../services/api";
 import "../styles/auth.css";
 
-const StudentSignupPage = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-    department: "",
-    year: ""
-  });
+const INITIAL = {
+  name: "", username: "", email: "",
+  department: "", year: "",
+  password: "", confirmPassword: "",
+};
 
-  const [error, setError] = useState("");
+export default function StudentSignupPage() {
+  const [form,    setForm]    = useState(INITIAL);
+  const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate              = useNavigate();
 
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
+  const handle = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
       return;
     }
 
     setLoading(true);
-
     try {
       await signupUser({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        role: "STUDENT",
-        name: formData.name,
-        department: formData.department,
-        year: parseInt(formData.year)
+        username:   form.username,
+        email:      form.email,
+        password:   form.password,
+        role:       "STUDENT",
+        name:       form.name,
+        department: form.department,
+        year:       parseInt(form.year) || 1,
       });
-
       navigate("/login");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Signup failed. Please try again."
-      );
+      setError(err.response?.data?.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box" style={{ maxWidth: "500px" }}>
-        <h2 className="text-center mb-4">Student Sign Up</h2>
+    <div className="auth-root">
+      <div className="auth-card auth-card-wide">
+        {/* Logo */}
+        <div className="auth-logo">SGT</div>
 
-        {error && <div className="error-box">{error}</div>}
+        <h1 className="auth-title">Create Account</h1>
+        <p className="auth-subtitle">Join Student Tracker as a student</p>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            className="form-control mb-3"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+        {error && (
+          <div className="auth-error" style={{ marginBottom: 16 }}>
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            {error}
+          </div>
+        )}
 
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            className="form-control mb-3"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            className="form-control mb-3"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-
-          <div className="row">
-            <div className="col-md-6 mb-3">
+        <form className="auth-form" onSubmit={handleSubmit}>
+          {/* Name + Username */}
+          <div className="auth-row">
+            <div className="auth-field">
+              <label className="auth-label">Full Name</label>
               <input
+                name="name"
                 type="text"
-                name="department"
-                placeholder="Department"
-                className="form-control"
-                value={formData.department}
-                onChange={handleChange}
+                className="auth-input"
+                placeholder="Raj Kumar"
+                value={form.name}
+                onChange={handle}
+                required
               />
             </div>
+            <div className="auth-field">
+              <label className="auth-label">Username</label>
+              <input
+                name="username"
+                type="text"
+                className="auth-input"
+                placeholder="raj123"
+                value={form.username}
+                onChange={handle}
+                required
+              />
+            </div>
+          </div>
 
-            <div className="col-md-6 mb-3">
+          {/* Email */}
+          <div className="auth-field">
+            <label className="auth-label">Email</label>
+            <input
+              name="email"
+              type="email"
+              className="auth-input"
+              placeholder="raj@example.com"
+              value={form.email}
+              onChange={handle}
+              required
+            />
+          </div>
+
+          {/* Department + Year */}
+          <div className="auth-row">
+            <div className="auth-field">
+              <label className="auth-label">Department</label>
+              <input
+                name="department"
+                type="text"
+                className="auth-input"
+                placeholder="e.g. IT, CSE"
+                value={form.department}
+                onChange={handle}
+              />
+            </div>
+            <div className="auth-field">
+              <label className="auth-label">Year</label>
               <select
                 name="year"
-                className="form-control"
-                value={formData.year}
-                onChange={handleChange}
+                className="auth-select"
+                value={form.year}
+                onChange={handle}
               >
                 <option value="">Select Year</option>
                 <option value="1">1st Year</option>
@@ -125,41 +143,51 @@ const StudentSignupPage = () => {
             </div>
           </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="form-control mb-3"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
+          {/* Password + Confirm */}
+          <div className="auth-row">
+            <div className="auth-field">
+              <label className="auth-label">Password</label>
+              <input
+                name="password"
+                type="password"
+                className="auth-input"
+                placeholder="Min. 6 characters"
+                value={form.password}
+                onChange={handle}
+                required
+              />
+            </div>
+            <div className="auth-field">
+              <label className="auth-label">Confirm Password</label>
+              <input
+                name="confirmPassword"
+                type="password"
+                className="auth-input"
+                placeholder="Repeat password"
+                value={form.confirmPassword}
+                onChange={handle}
+                required
+              />
+            </div>
+          </div>
 
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            className="form-control mb-3"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={loading}
-          >
-            {loading ? "Creating Account..." : "Sign Up"}
+          {/* Submit */}
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? (
+              <><span className="auth-spinner" /> Creating Account…</>
+            ) : (
+              "Sign Up"
+            )}
           </button>
         </form>
 
-        <p className="mt-3 text-center">
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
+        <div className="auth-footer">
+          <p>
+            Already have an account?{" "}
+            <Link to="/login" className="auth-link">Log in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
-};
-
-export default StudentSignupPage;
+}

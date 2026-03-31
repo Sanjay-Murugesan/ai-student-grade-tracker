@@ -1,10 +1,12 @@
 package com.studenttracker.backend.service;
 
+import com.studenttracker.backend.dto.BulkGradeRequest;
 import com.studenttracker.backend.entity.Grade;
 import com.studenttracker.backend.repository.GradeRepository;
-import org.springframework.stereotype.Service;
-
+import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GradeService {
@@ -118,5 +120,32 @@ public class GradeService {
             return;
         }
         repo.deleteById(id);
+    }
+
+    public List<Grade> getByCourse(Long courseId) {
+        if (courseId == null) {
+            return List.of();
+        }
+        return repo.findByCourseId(courseId);
+    }
+
+    @Transactional
+    public List<Grade> saveBulkGrades(List<BulkGradeRequest> requests, Long gradedBy) {
+        if (requests == null || requests.isEmpty()) {
+            return List.of();
+        }
+        List<Grade> grades = requests.stream().map(request -> {
+            Grade grade = new Grade();
+            grade.setStudentId(request.getStudentId());
+            grade.setCourseId(request.getCourseId());
+            grade.setAssignmentId(request.getAssignmentId());
+            grade.setScore(request.getScore());
+            grade.setMaxScore(request.getMaxScore() == null ? 100.0 : request.getMaxScore());
+            grade.setGradeType(request.getGradeType());
+            grade.setGradedBy(gradedBy);
+            grade.setGradedAt(LocalDateTime.now());
+            return grade;
+        }).toList();
+        return repo.saveAll(grades);
     }
 }

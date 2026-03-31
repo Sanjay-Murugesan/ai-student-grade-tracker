@@ -1,42 +1,55 @@
-import React, { useContext } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import ProtectedRoute from "./context/ProtectedRoute";
-import RoleRoute from "./context/RoleRoute";
+import React from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
-
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedLayout from "./layouts/ProtectedLayout";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import StudentDashboard from "./pages/student/StudentDashboard";
+import StudentGrades from "./pages/student/StudentGrades";
+import StudentAssignments from "./pages/student/StudentAssignments";
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import StudentRoster from "./pages/teacher/StudentRoster";
+import GradeManagement from "./pages/teacher/GradeManagement";
+import AssignmentManagement from "./pages/teacher/AssignmentManagement";
+import StudentDetails from "./pages/teacher/StudentDetails";
 
-// Pages
-import StudentDashboardPage from "./pages/StudentDashboardPage";
-import TeacherDashboardPage from "./pages/TeacherDashboardPage";
-import AssignmentsPage from "./pages/AssignmentsPage";
-import GradesPage from "./pages/GradesPage";
-import AIPredictPage from "./pages/AIPredictPage";
-import ProfilePage from "./pages/ProfilePage";
-import NotificationsPage from "./pages/NotificationsPage";
-import AIInsightsPage from "./pages/AIInsightsPage";
-import CourseAnalyticsPage from "./pages/CourseAnalyticsPage";
+function RoleHomeRedirect() {
+  const auth = useAuth();
+  return <Navigate to={auth.role === "TEACHER" ? "/teacher/dashboard" : "/student/dashboard"} replace />;
+}
 
-import StudentLoginPage from "./pages/StudentLoginPage";
-import StudentSignupPage from "./pages/StudentSignupPage";
-import InstructorLoginPage from "./pages/InstructorLoginPage";
-import InstructorSignupPage from "./pages/InstructorSignupPage";
-import { AuthContext } from "./context/AuthContext";
+function UnauthorizedPage() {
+  return (
+    <div className="auth-screen">
+      <div className="auth-card">
+        <p className="eyebrow">Access Control</p>
+        <h1>Access Denied</h1>
+        <p>This route does not match your current role permissions.</p>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-          {/* ================= AUTH ROUTES (NO NAV, NO FOOTER) ================= */}
-          <Route path="/login" element={<StudentLoginPage />} />
-          <Route path="/signup" element={<StudentSignupPage />} />
-          <Route path="/instructor-login" element={<InstructorLoginPage />} />
-          <Route path="/instructor-signup" element={<InstructorSignupPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <RoleHomeRedirect />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* ================= PROTECTED ROUTES ================= */}
           <Route
             element={
               <ProtectedRoute>
@@ -45,58 +58,74 @@ export default function App() {
             }
           >
             <Route
-              path="/"
-              element={<RoleRoute>{<RedirectDashboard />}</RoleRoute>}
-            />
-            <Route
-              path="/dashboard"
-              element={<RoleRoute>{<RedirectDashboard />}</RoleRoute>}
-            />
-            <Route
               path="/student/dashboard"
               element={
-                <RoleRoute allowed={["STUDENT"]}>
-                  <StudentDashboardPage />
-                </RoleRoute>
+                <ProtectedRoute allowedRoles={["STUDENT"]}>
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/grades"
+              element={
+                <ProtectedRoute allowedRoles={["STUDENT"]}>
+                  <StudentGrades />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/assignments"
+              element={
+                <ProtectedRoute allowedRoles={["STUDENT"]}>
+                  <StudentAssignments />
+                </ProtectedRoute>
               }
             />
             <Route
               path="/teacher/dashboard"
               element={
-                <RoleRoute allowed={["INSTRUCTOR"]}>
-                  <TeacherDashboardPage />
-                </RoleRoute>
+                <ProtectedRoute allowedRoles={["TEACHER"]}>
+                  <TeacherDashboard />
+                </ProtectedRoute>
               }
             />
-            <Route path="/assignments" element={<AssignmentsPage />} />
-            <Route path="/grades" element={<GradesPage />} />
-            <Route path="/ai-predict" element={<AIPredictPage />} />
-            <Route path="/ai-insights" element={<AIInsightsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
             <Route
-              path="/course-analytics"
+              path="/teacher/roster"
               element={
-                <RoleRoute allowed={["INSTRUCTOR"]}>
-                  <CourseAnalyticsPage />
-                </RoleRoute>
+                <ProtectedRoute allowedRoles={["TEACHER"]}>
+                  <StudentRoster />
+                </ProtectedRoute>
               }
             />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route
+              path="/teacher/grades"
+              element={
+                <ProtectedRoute allowedRoles={["TEACHER"]}>
+                  <GradeManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/assignments"
+              element={
+                <ProtectedRoute allowedRoles={["TEACHER"]}>
+                  <AssignmentManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/student/:id"
+              element={
+                <ProtectedRoute allowedRoles={["TEACHER"]}>
+                  <StudentDetails />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
-          {/* ================= FALLBACK ================= */}
-          <Route path="*" element={<Navigate to="/login" />} />
-
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   );
-}
-
-function RedirectDashboard() {
-  const { user } = useContext(AuthContext);
-  if (user?.role === "INSTRUCTOR") {
-    return <Navigate to="/teacher/dashboard" replace />;
-  }
-  return <Navigate to="/student/dashboard" replace />;
 }
