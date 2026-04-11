@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/shell.css";
+import "../styles/navbar.css";
 
 const pageTitles = {
   "/student/dashboard": "Student Dashboard",

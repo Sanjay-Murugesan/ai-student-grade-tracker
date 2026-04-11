@@ -1,148 +1,144 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signupUser } from "../services/api";
 import "../styles/auth.css";
 
 const InstructorSignupPage = () => {
-    const [formData, setFormData] = useState({
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        name: "",
-        department: ""
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    name: "",
+    department: ""
+  });
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
     });
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+  };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match");
-            return;
-        }
+    setLoading(true);
 
-        setLoading(true);
+    try {
+      await signupUser({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        role: "INSTRUCTOR",
+        name: formData.name,
+        department: formData.department
+      });
 
-        try {
-            await signupUser({
-                username: formData.username,
-                email: formData.email,
-                password: formData.password,
-                role: "INSTRUCTOR",
-                name: formData.name,
-                department: formData.department
-            });
+      navigate("/instructor-login");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Signup failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            navigate("/instructor-login");
-        } catch (err) {
-            setError(err.response?.data?.message || "Signup failed. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+  return (
+    <div className="auth-container">
 
-    return (
-        <div className="auth-container">
-            <div className="auth-box">
-                <h2>Instructor Sign Up</h2>
-                {error && <div className="alert alert-danger">{error}</div>}
+      {/* LEFT SIDE */}
+      <div className="auth-left">
+        <div className="auth-box">
+          <h2>Instructor Sign Up</h2>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label className="form-label">Full Name</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
+          {error && <div className="error-box">{error}</div>}
 
-                    <div className="mb-3">
-                        <label className="form-label">Username</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              onChange={handleChange}
+              required
+            />
 
-                    <div className="mb-3">
-                        <label className="form-label">Email</label>
-                        <input
-                            type="email"
-                            className="form-control"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              onChange={handleChange}
+              required
+            />
 
-                    <div className="mb-3">
-                        <label className="form-label">Department</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="department"
-                            value={formData.department}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              onChange={handleChange}
+              required
+            />
 
-                    <div className="mb-3">
-                        <label className="form-label">Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
+            <input
+              type="text"
+              name="department"
+              placeholder="Department"
+              onChange={handleChange}
+            />
 
-                    <div className="mb-3">
-                        <label className="form-label">Confirm Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              onChange={handleChange}
+              required
+            />
 
-                    <button type="submit" className="btn btn-success w-100" disabled={loading}>
-                        {loading ? "Creating Account..." : "Sign Up"}
-                    </button>
-                </form>
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              onChange={handleChange}
+              required
+            />
 
-                <p className="mt-3 text-center">
-                    Already have an account? <a href="/instructor-login">Login</a>
-                </p>
-            </div>
+            <button className="auth-btn">
+              {loading ? "Creating..." : "Sign Up"}
+            </button>
+          </form>
+
+          <div className="auth-links">
+            <p>
+              Already have an account?{" "}
+              <Link to="/instructor-login">Login</Link>
+            </p>
+
+            <p>
+              <Link to="/login">Student Login</Link>
+            </p>
+          </div>
         </div>
-    );
+      </div>
+
+      {/* RIGHT SIDE */}
+      <div className="auth-right">
+        <img src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png" alt="instructor" />
+      </div>
+
+    </div>
+  );
 };
 
 export default InstructorSignupPage;

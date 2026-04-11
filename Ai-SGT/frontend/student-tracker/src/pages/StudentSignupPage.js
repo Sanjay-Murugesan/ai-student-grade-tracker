@@ -16,15 +16,10 @@ const StudentSignupPage = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -40,20 +35,13 @@ const StudentSignupPage = () => {
 
     try {
       await signupUser({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
+        ...formData,
         role: "STUDENT",
-        name: formData.name,
-        department: formData.department,
         year: parseInt(formData.year)
       });
-
       navigate("/login");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Signup failed. Please try again."
-      );
+      setError(err.response?.data?.message || "Signup failed");
     } finally {
       setLoading(false);
     }
@@ -61,103 +49,46 @@ const StudentSignupPage = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-box" style={{ maxWidth: "500px" }}>
-        <h2 className="text-center mb-4">Student Sign Up</h2>
 
-        {error && <div className="error-box">{error}</div>}
+      <div className="auth-left">
+        <div className="auth-box">
+          <h2>Student Sign Up</h2>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            className="form-control mb-3"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+          {error && <div className="error-box">{error}</div>}
 
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            className="form-control mb-3"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
+          <form onSubmit={handleSubmit}>
+            <input name="name" placeholder="Full Name" onChange={handleChange} required />
+            <input name="username" placeholder="Username" onChange={handleChange} required />
+            <input name="email" placeholder="Email" onChange={handleChange} required />
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            className="form-control mb-3"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+            <input name="department" placeholder="Department" onChange={handleChange} />
 
-          <div className="row">
-            <div className="col-md-6 mb-3">
-              <input
-                type="text"
-                name="department"
-                placeholder="Department"
-                className="form-control"
-                value={formData.department}
-                onChange={handleChange}
-              />
-            </div>
+            <select name="year" onChange={handleChange}>
+              <option value="">Year</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
 
-            <div className="col-md-6 mb-3">
-              <select
-                name="year"
-                className="form-control"
-                value={formData.year}
-                onChange={handleChange}
-              >
-                <option value="">Select Year</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-              </select>
-            </div>
+            <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
+            <input type="password" name="confirmPassword" placeholder="Confirm Password" onChange={handleChange} required />
+
+            <button className="auth-btn">
+              {loading ? "Creating..." : "Sign Up"}
+            </button>
+          </form>
+
+          <div className="auth-links">
+            <Link to="/login">Already have account?</Link>
           </div>
-
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="form-control mb-3"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            className="form-control mb-3"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={loading}
-          >
-            {loading ? "Creating Account..." : "Sign Up"}
-          </button>
-        </form>
-
-        <p className="mt-3 text-center">
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
+        </div>
       </div>
+
+      <div className="auth-right">
+        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920277.png" />
+      </div>
+
     </div>
   );
 };

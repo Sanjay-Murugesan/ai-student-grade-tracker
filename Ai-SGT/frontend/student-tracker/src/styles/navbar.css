@@ -12,6 +12,14 @@
   z-index: 20;
 }
 
+.topbar .icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: currentColor;
+}
+
 .page-title {
   display: flex;
   align-items: baseline;

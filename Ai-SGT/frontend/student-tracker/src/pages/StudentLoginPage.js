@@ -25,9 +25,7 @@ const StudentLoginPage = () => {
       login(user, token);
       navigate("/student/dashboard");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Login failed. Please try again."
-      );
+      setError(err.response?.data?.message || "Login failed.");
     } finally {
       setLoading(false);
     }
@@ -35,31 +33,26 @@ const StudentLoginPage = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-box">
-        <h2 className="text-center mb-4">Student Login</h2>
 
-        {error && <div className="error-box">{error}</div>}
+      <div className="auth-left">
+        <div className="auth-box">
+          <h2>Student Login</h2>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label">Username</label>
+          {error && <div className="error-box">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
             <input
               type="text"
-              placeholder="Enter username"
-              className="form-control"
+              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
             />
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label">Password</label>
             <div className="password-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter password"
-                className="form-control"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -71,25 +64,23 @@ const StudentLoginPage = () => {
                 {showPassword ? "Hide" : "Show"}
               </span>
             </div>
+
+            <button className="auth-btn">
+              {loading ? "Signing..." : "Sign In"}
+            </button>
+          </form>
+
+          <div className="auth-links">
+            <p><Link to="/signup">Sign up</Link></p>
+            <p><Link to="/instructor-login">Instructor Login</Link></p>
           </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={loading}
-          >
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
-        </form>
-
-        <p className="mt-3 text-center">
-          Don’t have an account? <Link to="/signup">Sign up</Link>
-        </p>
-
-        <p className="text-center mt-2">
-          <Link to="/instructor-login">Login as Instructor</Link>
-        </p>
+        </div>
       </div>
+
+      <div className="auth-right">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png" />
+      </div>
+
     </div>
   );
 };

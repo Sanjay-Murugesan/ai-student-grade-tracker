@@ -1,78 +1,79 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/auth.css";
 
 const InstructorLoginPage = () => {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { login } = React.useContext(AuthContext);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-        setLoading(true);
+  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
-        try {
-            const response = await loginUser(username, password, "INSTRUCTOR");
-            const { token, user } = response.data;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-            login(user, token);
-            navigate("/teacher/dashboard");
-        } catch (err) {
-            setError(err.response?.data?.message || "Login failed. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      const response = await loginUser(username, password, "INSTRUCTOR");
+      const { token, user } = response.data;
+      login(user, token);
+      navigate("/teacher/dashboard");
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className="auth-container">
-            <div className="auth-box">
-                <h2>Instructor Login</h2>
-                {error && <div className="alert alert-danger">{error}</div>}
+  return (
+    <div className="auth-container">
 
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label className="form-label">Username</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </div>
+      <div className="auth-left">
+        <div className="auth-box">
+          <h2>Instructor Login</h2>
 
-                    <div className="mb-3">
-                        <label className="form-label">Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
+          {error && <div className="error-box">{error}</div>}
 
-                    <button type="submit" className="btn btn-success w-100" disabled={loading}>
-                        {loading ? "Logging in..." : "Login"}
-                    </button>
-                </form>
+          <form onSubmit={handleSubmit}>
+            <input
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
 
-                <p className="mt-3 text-center">
-                    Don't have an account? <a href="/instructor-signup">Sign up</a>
-                </p>
-                <p className="text-center mt-2">
-                    <a href="/login">Login as Student</a>
-                </p>
-            </div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
+            <button className="auth-btn">
+              {loading ? "Logging..." : "Login"}
+            </button>
+          </form>
+
+          <div className="auth-links">
+            <Link to="/instructor-signup">Sign up</Link>
+            <br />
+            <Link to="/login">Student Login</Link>
+          </div>
         </div>
-    );
+      </div>
+
+      <div className="auth-right">
+        <img src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png" />
+      </div>
+
+    </div>
+  );
 };
 
 export default InstructorLoginPage;

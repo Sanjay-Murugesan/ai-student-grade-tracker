@@ -179,6 +179,28 @@
   color: #667085;
 }
 
+.sgt-avatar {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #14b8a6 0%, #153b52 100%);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.sgt-avatar-lg {
+  width: 64px;
+  height: 64px;
+  font-size: 1.15rem;
+}
+
 .portal-pill {
   display: inline-flex;
   align-items: center;
