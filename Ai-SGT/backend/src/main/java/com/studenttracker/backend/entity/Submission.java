@@ -23,14 +23,23 @@ public class Submission {
     @Column(name = "assignment_id", nullable = false)
     private Long assignmentId;
 
-    @Column(name = "submission_date")
-    private LocalDateTime submissionDate;
+    @Column(name = "submitted_date")
+    private LocalDateTime submittedDate;
 
     @Column(name = "file_path")
     private String filePath;
 
+    private Double marks;
+
+    private String status = "SUBMITTED";
+
     @PrePersist
     protected void onCreate() {
-        submissionDate = LocalDateTime.now();
+        if (submittedDate == null) {
+            submittedDate = LocalDateTime.now();
+        }
+        if (status == null || status.isBlank()) {
+            status = "SUBMITTED";
+        }
     }
 }

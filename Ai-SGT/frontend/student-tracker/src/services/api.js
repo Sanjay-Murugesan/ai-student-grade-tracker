@@ -36,6 +36,8 @@ const PATHS = {
   assignments: "/api/v1/assignments",
   submissions: "/api/v1/submissions",
   grades: "/api/v1/grades",
+  attendance: "/api/v1/attendance",
+  notifications: "/api/v1/notifications",
   ai: "/ai",
 };
 
@@ -46,8 +48,10 @@ const put = (url, data) => api.put(url, data);
 const remove = (url) => api.delete(url);
 
 // -------- Authentication API --------
-export const loginUser = (username, password, role) =>
-  post(`${PATHS.auth}/login`, { username, password, role });
+export const loginUser = (identifier, password, role) => {
+  const key = identifier?.includes("@") ? "email" : "username";
+  return post(`${PATHS.auth}/login`, { [key]: identifier, password, role });
+};
 
 export const signupUser = (userData) =>
   post(`${PATHS.auth}/signup`, userData);
@@ -95,16 +99,31 @@ export const getSubmissionsByAssignment = (assignmentId) =>
 export const createSubmission = (data) => post(PATHS.submissions, data);
 export const updateSubmission = (id, data) => put(`${PATHS.submissions}/${id}`, data);
 export const deleteSubmission = (id) => remove(`${PATHS.submissions}/${id}`);
+export const submitAssignment = createSubmission;
 
 // -------- Grade API --------
 export const getGrades = () => get(PATHS.grades);
 export const getGradesByStudent = (id) => get(`${PATHS.grades}/student/${id}`);
+export const getGpaSummary = (id) => get(`${PATHS.grades}/student/${id}/summary`);
 export const addGrade = (data) => post(PATHS.grades, data);
 export const updateGrade = (id, data) => put(`${PATHS.grades}/${id}`, data);
 export const deleteGrade = (id) => remove(`${PATHS.grades}/${id}`);
 
+// -------- Attendance API --------
+export const getAttendance = () => get(PATHS.attendance);
+export const getAttendanceByStudent = (studentId) => get(`${PATHS.attendance}/student/${studentId}`);
+export const markAttendance = (data) => post(PATHS.attendance, data);
+export const updateAttendance = (id, data) => put(`${PATHS.attendance}/${id}`, data);
+export const deleteAttendance = (id) => remove(`${PATHS.attendance}/${id}`);
+
 // -------- AI Prediction API --------
 export const getAiPrediction = (id) => get(`${PATHS.ai}/predict/${id}`);
 export const getPredictionHistory = (studentId) => get(`${PATHS.ai}/prediction/${studentId}`);
+export const getAiInsights = (studentId) => get(`${PATHS.ai}/insights/${studentId}`);
+
+// -------- Notification API --------
+export const getNotifications = () => get(PATHS.notifications);
+export const getNotificationsByStudent = (studentId) => get(`${PATHS.notifications}/student/${studentId}`);
+export const createNotification = (data) => post(PATHS.notifications, data);
 
 export default api;

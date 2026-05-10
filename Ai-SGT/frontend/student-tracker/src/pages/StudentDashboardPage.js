@@ -4,17 +4,22 @@ import { AuthContext } from "../context/AuthContext";
 import {
   getAiPrediction,
   getAssignments,
+  getAttendanceByStudent,
   getGradesByStudent,
   getStudentByUserId,
+  getSubmissionsByStudent,
 } from "../services/api";
+import StudentChart from "../components/StudentChart";
 import {
   average,
   daysUntil,
   formatDisplayDate,
+  parseSubjectAttendance,
   percentage,
   riskMeta,
 } from "../utils/portal";
 import "../styles/portal.css";
+import "../styles/dashboard-pages.css";
 
 export default function StudentDashboardPage() {
   const { user } = useContext(AuthContext);
@@ -23,6 +28,8 @@ export default function StudentDashboardPage() {
   const [student, setStudent] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [grades, setGrades] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [attendanceRows, setAttendanceRows] = useState([]);
   const [prediction, setPrediction] = useState(null);
 
   useEffect(() => {
@@ -45,9 +52,11 @@ export default function StudentDashboardPage() {
 
         setStudent(studentRecord);
 
-        const [assignmentResponse, gradeResponse, predictionResponse] = await Promise.all([
+        const [assignmentResponse, gradeResponse, submissionResponse, attendanceResponse, predictionResponse] = await Promise.all([
           getAssignments(),
           studentRecord?.studentId ? getGradesByStudent(studentRecord.studentId) : Promise.resolve(null),
+          studentRecord?.studentId ? getSubmissionsByStudent(studentRecord.studentId) : Promise.resolve(null),
+          studentRecord?.studentId ? getAttendanceByStudent(studentRecord.studentId).catch(() => null) : Promise.resolve(null),
           studentRecord?.studentId ? getAiPrediction(studentRecord.studentId).catch(() => null) : Promise.resolve(null),
         ]);
 
@@ -55,6 +64,8 @@ export default function StudentDashboardPage() {
 
         setAssignments(Array.isArray(assignmentResponse?.data) ? assignmentResponse.data : []);
         setGrades(Array.isArray(gradeResponse?.data) ? gradeResponse.data : []);
+        setSubmissions(Array.isArray(submissionResponse?.data) ? submissionResponse.data : []);
+        setAttendanceRows(Array.isArray(attendanceResponse?.data) ? attendanceResponse.data : []);
         setPrediction(predictionResponse?.data || null);
       } catch (err) {
         if (!active) return;
@@ -90,11 +101,12 @@ export default function StudentDashboardPage() {
   }, [assignments]);
 
   const overdueCount = useMemo(() => {
+    const submitted = new Set(submissions.map((submission) => String(submission.assignmentId)));
     return assignments.filter((assignment) => {
       const remaining = daysUntil(assignment.dueDate);
-      return remaining !== null && remaining < 0;
+      return remaining !== null && remaining < 0 && !submitted.has(String(assignment.assignmentId));
     }).length;
-  }, [assignments]);
+  }, [assignments, submissions]);
 
   const averageGrade = useMemo(() => {
     const gradePercentages = grades.map((grade) => {
@@ -106,8 +118,8 @@ export default function StudentDashboardPage() {
 
   const completionRate = useMemo(() => {
     if (!assignments.length) return 0;
-    return Math.round((grades.length / assignments.length) * 100);
-  }, [assignments.length, grades.length]);
+    return Math.round((submissions.length / assignments.length) * 100);
+  }, [assignments.length, submissions.length]);
 
   const recentGrades = useMemo(() => {
     return [...grades]
@@ -116,6 +128,12 @@ export default function StudentDashboardPage() {
   }, [grades]);
 
   const risk = riskMeta(prediction?.risk);
+  const attendance = attendanceRows.length
+    ? Math.round(attendanceRows.reduce((sum, row) => sum + Number(row.percentage || 0), 0) / attendanceRows.length)
+    : Math.round(Number(student?.attendancePercentage || 0));
+  const subjectAttendance = parseSubjectAttendance(student?.subjectAttendance);
+  const gpa = Number(student?.gpa || 0).toFixed(2);
+  const cgpa = Number(student?.cgpa || student?.gpa || 0).toFixed(2);
 
   if (loading) {
     return (
@@ -132,7 +150,7 @@ export default function StudentDashboardPage() {
   }
 
   return (
-    <div className="portal-page">
+    <div className="portal-page dashboard-clean">
       <section className="portal-hero">
         <div className="portal-hero-copy">
           <div className="portal-kicker">Student Workspace</div>
@@ -156,14 +174,14 @@ export default function StudentDashboardPage() {
 
       <section className="portal-stat-grid">
         <article className="portal-stat">
-          <div className="portal-stat-label">Assignments</div>
-          <div className="portal-stat-value">{assignments.length}</div>
-          <div className="portal-stat-note">All active coursework currently visible in the tracker.</div>
+          <div className="portal-stat-label">GPA / CGPA</div>
+          <div className="portal-stat-value">{gpa}</div>
+          <div className="portal-stat-note">{`Cumulative GPA ${cgpa}`}</div>
         </article>
         <article className="portal-stat">
-          <div className="portal-stat-label">Average grade</div>
-          <div className="portal-stat-value">{averageGrade}%</div>
-          <div className="portal-stat-note">Calculated from your graded assignments so far.</div>
+          <div className="portal-stat-label">Attendance</div>
+          <div className="portal-stat-value">{attendance}%</div>
+          <div className="portal-stat-note">{attendance < 75 ? "Low attendance alert active." : "Attendance is in a healthy range."}</div>
         </article>
         <article className="portal-stat">
           <div className="portal-stat-label">Completion</div>
@@ -331,11 +349,66 @@ export default function StudentDashboardPage() {
                 {overdueCount
                   ? "Clear late assignments first, then revisit the AI guidance page for a stronger prediction."
                   : dueSoon.length
-                  ? "Your next best move is to finish the nearest deadline before it becomes urgent."
-                  : "Use the free time to review older topics and push your average even higher."}
+                    ? "Your next best move is to finish the nearest deadline before it becomes urgent."
+                    : "Use the free time to review older topics and push your average even higher."}
               </p>
             </div>
           </div>
+        </article>
+
+        <article className="portal-card">
+          <div className="portal-card-header">
+            <div>
+              <h3 className="portal-card-title">Attendance graph</h3>
+              <p className="portal-card-subtitle">Subject-wise attendance from your profile record.</p>
+            </div>
+          </div>
+
+          {subjectAttendance.length ? (
+            <div className="portal-stack">
+              {subjectAttendance.map((item) => {
+                const value = Math.round(Number(item.attendance ?? item.percentage) || 0);
+                return (
+                  <div key={item.subject || item.course} className="portal-progress-row">
+                    <div>
+                      <strong>{item.subject || item.course}</strong>
+                      <span>{value}%</span>
+                    </div>
+                    <div className="portal-meter">
+                      <span style={{ width: `${Math.min(100, value)}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="portal-empty">
+              <h4>No subject attendance yet</h4>
+              <p>Your teacher can add attendance details from the student management area.</p>
+            </div>
+          )}
+        </article>
+      </section>
+
+      <section className="portal-grid-equal">
+        <article className="portal-card">
+          <div className="portal-card-header">
+            <div>
+              <h3 className="portal-card-title">GPA trend</h3>
+              <p className="portal-card-subtitle">Semester GPA movement based on saved grade records.</p>
+            </div>
+          </div>
+          <StudentChart grades={grades} type="gpa" />
+        </article>
+
+        <article className="portal-card">
+          <div className="portal-card-header">
+            <div>
+              <h3 className="portal-card-title">Attendance chart</h3>
+              <p className="portal-card-subtitle">Present and absent split across marked courses.</p>
+            </div>
+          </div>
+          <StudentChart attendance={attendanceRows} type="attendance" />
         </article>
       </section>
     </div>

@@ -45,6 +45,10 @@ public class StudentService {
         ex.setEmail(s.getEmail());
         ex.setDepartment(s.getDepartment());
         ex.setYear(s.getYear());
+        ex.setGpa(s.getGpa());
+        ex.setCgpa(s.getCgpa());
+        ex.setAttendancePercentage(s.getAttendancePercentage());
+        ex.setSubjectAttendance(s.getSubjectAttendance());
 
         return repo.save(ex);
     }

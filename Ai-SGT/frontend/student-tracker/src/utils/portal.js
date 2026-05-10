@@ -87,3 +87,27 @@ export function sortByNewest(items, accessor) {
     return rightDate - leftDate;
   });
 }
+
+export function parseSubjectAttendance(value) {
+  if (!value) return [];
+
+  if (Array.isArray(value)) return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === "object") {
+      return Object.entries(parsed).map(([subject, attendance]) => ({ subject, attendance }));
+    }
+  } catch {
+    return String(value)
+      .split(",")
+      .map((part) => {
+        const [subject, attendance] = part.split(":");
+        return { subject: subject?.trim(), attendance: Number(attendance) || 0 };
+      })
+      .filter((item) => item.subject);
+  }
+
+  return [];
+}

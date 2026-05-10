@@ -37,10 +37,10 @@ describe("API service", () => {
     const mockResponse = { data: { token: "fake-token" } };
     mockApiClient.post.mockResolvedValue(mockResponse);
 
-    const result = await api.loginUser("testuser", "password123", "STUDENT");
+    const result = await api.loginUser("student@example.com", "password123", "STUDENT");
 
     expect(mockApiClient.post).toHaveBeenCalledWith("/api/v1/auth/login", {
-      username: "testuser",
+      email: "student@example.com",
       password: "password123",
       role: "STUDENT",
     });

@@ -32,6 +32,8 @@ public class Assignment {
     @Column(name = "priority")
     private String priority;
 
+    private String status = "PENDING";
+
     @Column(name = "instructor_id")
     private Long instructorId;
 
@@ -42,7 +44,15 @@ public class Assignment {
     private LocalDateTime createdAt;
 
     @PrePersist
+    @PreUpdate
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (dueDate != null && dueDate.isBefore(LocalDate.now())) {
+            status = "OVERDUE";
+        } else if (status == null || status.isBlank()) {
+            status = "PENDING";
+        }
     }
 }

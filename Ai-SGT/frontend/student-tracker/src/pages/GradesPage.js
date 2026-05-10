@@ -26,6 +26,7 @@ export default function GradesPage() {
   const { user } = useContext(AuthContext);
   const isTeacher = user?.role === "INSTRUCTOR";
   const [students, setStudents] = useState([]);
+  const [studentProfile, setStudentProfile] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -34,7 +35,10 @@ export default function GradesPage() {
   const [form, setForm] = useState({
     studentId: "",
     assignmentId: "",
-    score: ""
+    internalMarks: "",
+    semesterMarks: "",
+    assignmentMarks: "",
+    semester: ""
   });
 
   const fetchGrades = useCallback(async (rawStudentId) => {
@@ -86,6 +90,7 @@ export default function GradesPage() {
         .then(r => {
           const student = r.data;
           if (student?.studentId) {
+            setStudentProfile(student);
             setForm((prev) => ({ ...prev, studentId: String(student.studentId) }));
             fetchGrades(student.studentId);
           } else {
@@ -106,8 +111,8 @@ export default function GradesPage() {
     const studentIdClean = cleanId(form.studentId);
     const assignmentIdClean = cleanId(form.assignmentId);
 
-    if (!studentIdClean || !assignmentIdClean || form.score === "") {
-      setMessage("Please select a student, an assignment and enter a score.");
+    if (!studentIdClean || !assignmentIdClean || form.assignmentMarks === "") {
+      setMessage("Please select a student, an assignment and enter assignment marks.");
       return;
     }
 
@@ -118,13 +123,20 @@ export default function GradesPage() {
 
     setLoading(true);
     try {
+      const assignment = assignments.find((item) => String(item.assignmentId) === assignmentIdClean);
       await addGrade({
         studentId: Number(studentIdClean),
         assignmentId: Number(assignmentIdClean),
-        score: Number(form.score)
+        courseId: assignment?.courseId || null,
+        internalMarks: Number(form.internalMarks) || 0,
+        semesterMarks: Number(form.semesterMarks) || 0,
+        assignmentMarks: Number(form.assignmentMarks) || 0,
+        score: Number(form.assignmentMarks) || 0,
+        marks: Number(form.assignmentMarks) || 0,
+        semester: Number(form.semester) || null
       });
       setMessage("Grade added successfully.");
-      setForm({ studentId: "", assignmentId: "", score: "" });
+      setForm({ studentId: "", assignmentId: "", internalMarks: "", semesterMarks: "", assignmentMarks: "", semester: "" });
       // Refresh grades for this student
       await fetchGrades(studentIdClean);
     } catch (err) {
@@ -214,15 +226,51 @@ export default function GradesPage() {
               </label>
 
               <label className="grades-label">
-                Score
+                Internal Marks
+                <input
+                  type="number"
+                  min="0"
+                  className="grades-input"
+                  placeholder="Internal marks"
+                  value={form.internalMarks}
+                  onChange={(e) => setForm({ ...form, internalMarks: e.target.value })}
+                />
+              </label>
+
+              <label className="grades-label">
+                Semester Marks
+                <input
+                  type="number"
+                  min="0"
+                  className="grades-input"
+                  placeholder="Semester marks"
+                  value={form.semesterMarks}
+                  onChange={(e) => setForm({ ...form, semesterMarks: e.target.value })}
+                />
+              </label>
+
+              <label className="grades-label">
+                Assignment Marks
                 <input
                   type="number"
                   required
                   min="0"
                   className="grades-input"
-                  placeholder="Score"
-                  value={form.score}
-                  onChange={(e) => setForm({ ...form, score: e.target.value })}
+                  placeholder="Assignment marks"
+                  value={form.assignmentMarks}
+                  onChange={(e) => setForm({ ...form, assignmentMarks: e.target.value })}
+                />
+              </label>
+
+              <label className="grades-label">
+                Semester
+                <input
+                  type="number"
+                  min="1"
+                  className="grades-input"
+                  placeholder="Semester"
+                  value={form.semester}
+                  onChange={(e) => setForm({ ...form, semester: e.target.value })}
                 />
               </label>
 
@@ -247,6 +295,14 @@ export default function GradesPage() {
             <div className="grades-stat">
               <span className="grades-stat-label">Highest</span>
               <span className="grades-stat-value">{stats.max}</span>
+            </div>
+            <div className="grades-stat">
+              <span className="grades-stat-label">GPA</span>
+              <span className="grades-stat-value">{Number(studentProfile?.gpa || 0).toFixed(2)}</span>
+            </div>
+            <div className="grades-stat">
+              <span className="grades-stat-label">CGPA</span>
+              <span className="grades-stat-value">{Number(studentProfile?.cgpa || studentProfile?.gpa || 0).toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -274,13 +330,13 @@ export default function GradesPage() {
                       {assignment?.title || `Assignment #${g.assignmentId}`}
                     </div>
                     <div className="grades-item-meta">
-                      ID: {g.assignmentId}
+                      ID: {g.assignmentId} {g.grade ? `· Grade ${g.grade}` : ""} {g.semester ? `· Sem ${g.semester}` : ""}
                     </div>
                   </div>
 
                   <div className="grades-item-score">
                     <div className="grades-score-pill">
-                      {g.score}{maxMarks ? ` / ${maxMarks}` : ""}
+                      {g.marks ?? g.score}{maxMarks ? ` / ${maxMarks}` : ""} {g.gradePoints ? `· GP ${g.gradePoints}` : ""}
                     </div>
                     {progress !== null && (
                       <div className="grades-progress">

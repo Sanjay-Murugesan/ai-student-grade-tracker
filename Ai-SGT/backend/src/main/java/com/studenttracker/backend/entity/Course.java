@@ -19,6 +19,13 @@ public class Course {
     @Column(name = "course_name", nullable = false)
     private String courseName;
 
+    @Column(name = "course_code", unique = true)
+    private String courseCode;
+
+    private Integer credits;
+
+    private Integer semester;
+
     @Column(name = "instructor_id", nullable = false)
     private Long instructorId;
 

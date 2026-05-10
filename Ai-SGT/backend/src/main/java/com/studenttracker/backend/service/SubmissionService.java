@@ -108,6 +108,15 @@ public class SubmissionService {
         if (submissionDetails.getFilePath() != null) {
             submission.setFilePath(submissionDetails.getFilePath());
         }
+        if (submissionDetails.getMarks() != null) {
+            submission.setMarks(submissionDetails.getMarks());
+        }
+        if (submissionDetails.getStatus() != null) {
+            submission.setStatus(submissionDetails.getStatus());
+        }
+        if (submissionDetails.getSubmittedDate() != null) {
+            submission.setSubmittedDate(submissionDetails.getSubmittedDate());
+        }
 
         return submissionRepository.save(submission);
     }

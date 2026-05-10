@@ -81,6 +81,15 @@ public class CourseService {
         if (courseDetails.getCourseName() != null) {
             course.setCourseName(courseDetails.getCourseName());
         }
+        if (courseDetails.getCourseCode() != null) {
+            course.setCourseCode(courseDetails.getCourseCode());
+        }
+        if (courseDetails.getCredits() != null) {
+            course.setCredits(courseDetails.getCredits());
+        }
+        if (courseDetails.getSemester() != null) {
+            course.setSemester(courseDetails.getSemester());
+        }
         if (courseDetails.getDescription() != null) {
             course.setDescription(courseDetails.getDescription());
         }

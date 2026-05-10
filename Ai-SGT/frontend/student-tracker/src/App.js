@@ -17,6 +17,7 @@ import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AIInsightsPage from "./pages/AIInsightsPage";
 import CourseAnalyticsPage from "./pages/CourseAnalyticsPage";
+import AttendancePage from "./pages/AttendancePage";
 
 import StudentLoginPage from "./pages/StudentLoginPage";
 import StudentSignupPage from "./pages/StudentSignupPage";
@@ -70,6 +71,7 @@ export default function App() {
             />
             <Route path="/assignments" element={<AssignmentsPage />} />
             <Route path="/grades" element={<GradesPage />} />
+            <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/ai-predict" element={<AIPredictPage />} />
             <Route path="/ai-insights" element={<AIInsightsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />

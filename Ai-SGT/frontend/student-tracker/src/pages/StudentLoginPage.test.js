@@ -15,7 +15,7 @@ describe('StudentLoginPage', () => {
         jest.clearAllMocks();
     });
 
-    test('renders login form with username and password fields', () => {
+    test('renders login form with email and password fields', () => {
         render(
             <Router>
                 <AuthProvider>
@@ -24,7 +24,7 @@ describe('StudentLoginPage', () => {
             </Router>
         );
 
-        expect(screen.getByPlaceholderText(/username/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
         expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
@@ -38,18 +38,18 @@ describe('StudentLoginPage', () => {
             </Router>
         );
 
-        const usernameInput = screen.getByPlaceholderText(/username/i);
+        const emailInput = screen.getByPlaceholderText(/email/i);
         const passwordInput = screen.getByPlaceholderText(/password/i);
 
-        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+        fireEvent.change(emailInput, { target: { value: 'student@example.com' } });
         fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-        expect(usernameInput.value).toBe('testuser');
+        expect(emailInput.value).toBe('student@example.com');
         expect(passwordInput.value).toBe('password123');
     });
 
     test('displays error message on failed login', async () => {
-        api.login.mockRejectedValue(new Error('Invalid credentials'));
+        api.loginUser.mockRejectedValue({ response: { data: { message: 'Invalid credentials' } } });
 
         render(
             <Router>
@@ -59,8 +59,8 @@ describe('StudentLoginPage', () => {
             </Router>
         );
 
-        fireEvent.change(screen.getByPlaceholderText(/username/i), {
-            target: { value: 'testuser' }
+        fireEvent.change(screen.getByPlaceholderText(/email/i), {
+            target: { value: 'student@example.com' }
         });
         fireEvent.change(screen.getByPlaceholderText(/password/i), {
             target: { value: 'wrongpassword' }
@@ -81,7 +81,7 @@ describe('StudentLoginPage', () => {
             </Router>
         );
 
-        expect(screen.getByText(/are you an instructor/i)).toBeInTheDocument();
+        expect(screen.getByText(/instructor login/i)).toBeInTheDocument();
     });
 
     test('has link to signup page', () => {
@@ -93,6 +93,6 @@ describe('StudentLoginPage', () => {
             </Router>
         );
 
-        expect(screen.getByText(/don't have an account/i)).toBeInTheDocument();
+        expect(screen.getByText(/sign up/i)).toBeInTheDocument();
     });
 });

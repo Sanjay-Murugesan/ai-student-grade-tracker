@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { getAiPrediction, getGradesByStudent, getStudentByUserId } from "../services/api";
+import { getAiInsights, getAiPrediction, getGradesByStudent, getStudentByUserId } from "../services/api";
 import { average, riskMeta } from "../utils/portal";
 import "../styles/portal.css";
 
@@ -9,6 +9,7 @@ export default function AIInsightsPage() {
   const [studentId, setStudentId] = useState("");
   const [prediction, setPrediction] = useState(null);
   const [grades, setGrades] = useState([]);
+  const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -32,14 +33,16 @@ export default function AIInsightsPage() {
         }
 
         setStudentId(String(detectedId));
-        const [predictionResponse, gradeResponse] = await Promise.all([
+        const [predictionResponse, gradeResponse, insightResponse] = await Promise.all([
           getAiPrediction(detectedId).catch(() => null),
           getGradesByStudent(detectedId).catch(() => null),
+          getAiInsights(detectedId).catch(() => null),
         ]);
 
         if (!active) return;
         setPrediction(predictionResponse?.data || null);
         setGrades(Array.isArray(gradeResponse?.data) ? gradeResponse.data : []);
+        setInsights(Array.isArray(insightResponse?.data?.insights) ? insightResponse.data.insights : []);
       } catch (err) {
         if (!active) return;
         console.error("AI insights preload failed", err);
@@ -62,13 +65,15 @@ export default function AIInsightsPage() {
     try {
       setLoading(true);
       setError("");
-      const [predictionResponse, gradeResponse] = await Promise.all([
+      const [predictionResponse, gradeResponse, insightResponse] = await Promise.all([
         getAiPrediction(studentId.trim()),
         getGradesByStudent(studentId.trim()).catch(() => null),
+        getAiInsights(studentId.trim()).catch(() => null),
       ]);
 
       setPrediction(predictionResponse?.data || null);
       setGrades(Array.isArray(gradeResponse?.data) ? gradeResponse.data : []);
+      setInsights(Array.isArray(insightResponse?.data?.insights) ? insightResponse.data.insights : []);
     } catch (err) {
       console.error("AI insights lookup failed", err);
       setPrediction(null);
@@ -213,6 +218,14 @@ export default function AIInsightsPage() {
                   </p>
                 </div>
               </div>
+              {insights.map((insight) => (
+                <div className="portal-list-item" key={insight}>
+                  <div>
+                    <strong>AI insight</strong>
+                    <p>{insight}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </article>
         </section>

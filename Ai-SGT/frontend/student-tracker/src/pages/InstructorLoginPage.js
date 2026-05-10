@@ -41,7 +41,7 @@ const InstructorLoginPage = () => {
 
           <form onSubmit={handleSubmit}>
             <input
-              placeholder="Username"
+              placeholder="Username or Email"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required

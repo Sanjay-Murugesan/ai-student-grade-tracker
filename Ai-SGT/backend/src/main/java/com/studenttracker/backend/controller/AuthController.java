@@ -150,32 +150,19 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody Map<String, Object> request) {
         try {
             String username = (String) request.get("username");
+            String email = (String) request.get("email");
             String password = (String) request.get("password");
             String role = (String) request.get("role");
+            String identifier = email != null && !email.isBlank() ? email : username;
 
-            // Find user by username
-            Optional<User> userOpt = userService.getUserByUsername(username);
+            Optional<User> userOpt = userService.authenticate(identifier, password, role);
             if (userOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "Invalid username or password"));
+                        .body(Map.of("message", "Invalid credentials or role"));
             }
 
             User user = userOpt.get();
-
-            // Check password (In production, use proper password hashing)
-            if (!user.getPassword().equals(password)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "Invalid username or password"));
-            }
-
-            // Check role
-            if (!user.getRole().toString().equals(role)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "Invalid role for this user"));
-            }
-
-            // Generate token (simple JWT for now - in production use proper JWT)
-            String token = "token_" + user.getId() + "_" + System.currentTimeMillis();
+            String token = userService.generateToken(user);
 
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);

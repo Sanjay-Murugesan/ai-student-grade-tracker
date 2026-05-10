@@ -1,9 +1,21 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { getAssignments, getCourses, getGrades, getStudents } from "../services/api";
+import { addStudent, deleteStudent, getAssignments, getCourses, getGrades, getStudents, updateStudent } from "../services/api";
 import { average, daysUntil, formatDisplayDate } from "../utils/portal";
 import "../styles/portal.css";
+import "../styles/dashboard-pages.css";
+
+const EMPTY_STUDENT = {
+  name: "",
+  email: "",
+  department: "",
+  year: "",
+  gpa: "",
+  cgpa: "",
+  attendancePercentage: "",
+  subjectAttendance: "",
+};
 
 export default function TeacherDashboardPage() {
   const { user } = useContext(AuthContext);
@@ -13,6 +25,9 @@ export default function TeacherDashboardPage() {
   const [assignments, setAssignments] = useState([]);
   const [grades, setGrades] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [studentForm, setStudentForm] = useState(EMPTY_STUDENT);
+  const [editingStudentId, setEditingStudentId] = useState(null);
+  const [savingStudent, setSavingStudent] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -102,6 +117,72 @@ export default function TeacherDashboardPage() {
     return remaining !== null && remaining < 0;
   }).length;
 
+  const refreshStudents = async () => {
+    const studentResponse = await getStudents();
+    setStudents(Array.isArray(studentResponse?.data) ? studentResponse.data : []);
+  };
+
+  const handleStudentFormChange = (event) => {
+    const { name, value } = event.target;
+    setStudentForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleEditStudent = (student) => {
+    setEditingStudentId(student.studentId);
+    setStudentForm({
+      name: student.name || "",
+      email: student.email || "",
+      department: student.department || "",
+      year: student.year || "",
+      gpa: student.gpa ?? "",
+      cgpa: student.cgpa ?? "",
+      attendancePercentage: student.attendancePercentage ?? "",
+      subjectAttendance: student.subjectAttendance || "",
+    });
+  };
+
+  const handleSaveStudent = async (event) => {
+    event.preventDefault();
+    setSavingStudent(true);
+    setError("");
+
+    const payload = {
+      ...studentForm,
+      year: studentForm.year === "" ? null : Number(studentForm.year),
+      gpa: studentForm.gpa === "" ? null : Number(studentForm.gpa),
+      cgpa: studentForm.cgpa === "" ? null : Number(studentForm.cgpa),
+      attendancePercentage:
+        studentForm.attendancePercentage === "" ? null : Number(studentForm.attendancePercentage),
+    };
+
+    try {
+      if (editingStudentId) {
+        await updateStudent(editingStudentId, payload);
+      } else {
+        await addStudent(payload);
+      }
+      setStudentForm(EMPTY_STUDENT);
+      setEditingStudentId(null);
+      await refreshStudents();
+    } catch (err) {
+      console.error("Student save failed", err);
+      setError(err.response?.data?.message || "Student save failed.");
+    } finally {
+      setSavingStudent(false);
+    }
+  };
+
+  const handleDeleteStudent = async (studentId) => {
+    if (!window.confirm("Remove this student record?")) return;
+    try {
+      await deleteStudent(studentId);
+      await refreshStudents();
+    } catch (err) {
+      console.error("Student delete failed", err);
+      setError(err.response?.data?.message || "Student delete failed.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="portal-page">
@@ -117,7 +198,7 @@ export default function TeacherDashboardPage() {
   }
 
   return (
-    <div className="portal-page">
+    <div className="portal-page dashboard-clean">
       <section className="portal-hero">
         <div className="portal-hero-copy">
           <div className="portal-kicker">Instructor Workspace</div>
@@ -252,6 +333,116 @@ export default function TeacherDashboardPage() {
             <div className="portal-empty">
               <h4>No upcoming deadlines</h4>
               <p>You currently do not have dated assignments coming up next.</p>
+            </div>
+          )}
+        </article>
+      </section>
+
+      <section className="portal-grid-2">
+        <article className="portal-card">
+          <div className="portal-card-header">
+            <div>
+              <h3 className="portal-card-title">Manage students</h3>
+              <p className="portal-card-subtitle">Add, edit, remove, and update attendance or GPA records.</p>
+            </div>
+          </div>
+
+          <form className="portal-stack" onSubmit={handleSaveStudent}>
+            <div className="portal-inline-form">
+              <div className="portal-field">
+                <label>Name</label>
+                <input name="name" value={studentForm.name} onChange={handleStudentFormChange} required />
+              </div>
+              <div className="portal-field">
+                <label>Email</label>
+                <input name="email" type="email" value={studentForm.email} onChange={handleStudentFormChange} required />
+              </div>
+              <div className="portal-field">
+                <label>Department</label>
+                <input name="department" value={studentForm.department} onChange={handleStudentFormChange} />
+              </div>
+              <div className="portal-field">
+                <label>Year</label>
+                <input name="year" type="number" min="1" max="4" value={studentForm.year} onChange={handleStudentFormChange} />
+              </div>
+            </div>
+
+            <div className="portal-inline-form">
+              <div className="portal-field">
+                <label>GPA</label>
+                <input name="gpa" type="number" step="0.01" min="0" max="10" value={studentForm.gpa} onChange={handleStudentFormChange} />
+              </div>
+              <div className="portal-field">
+                <label>CGPA</label>
+                <input name="cgpa" type="number" step="0.01" min="0" max="10" value={studentForm.cgpa} onChange={handleStudentFormChange} />
+              </div>
+              <div className="portal-field">
+                <label>Attendance %</label>
+                <input name="attendancePercentage" type="number" min="0" max="100" value={studentForm.attendancePercentage} onChange={handleStudentFormChange} />
+              </div>
+            </div>
+
+            <div className="portal-field">
+              <label>Subject attendance</label>
+              <textarea
+                name="subjectAttendance"
+                value={studentForm.subjectAttendance}
+                onChange={handleStudentFormChange}
+                placeholder='Example: [{"subject":"Math","attendance":82},{"subject":"DBMS","attendance":74}]'
+              />
+            </div>
+
+            <div className="portal-actions">
+              <button className="portal-button primary" type="submit" disabled={savingStudent}>
+                {savingStudent ? "Saving..." : editingStudentId ? "Update student" : "Add student"}
+              </button>
+              {editingStudentId && (
+                <button
+                  className="portal-button soft"
+                  type="button"
+                  onClick={() => {
+                    setEditingStudentId(null);
+                    setStudentForm(EMPTY_STUDENT);
+                  }}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        </article>
+
+        <article className="portal-card">
+          <div className="portal-card-header">
+            <div>
+              <h3 className="portal-card-title">Student roster</h3>
+              <p className="portal-card-subtitle">Quick edit controls for existing student records.</p>
+            </div>
+          </div>
+
+          {students.length ? (
+            <div className="portal-stack">
+              {students.slice(0, 8).map((student) => (
+                <div className="portal-list-item" key={student.studentId}>
+                  <div>
+                    <strong>{student.name || `Student ${student.studentId}`}</strong>
+                    <p>{`${student.email || "No email"} · Attendance ${Math.round(Number(student.attendancePercentage || 0))}%`}</p>
+                  </div>
+                  <div className="portal-actions">
+                    <button className="portal-button soft" type="button" onClick={() => handleEditStudent(student)}>
+                      Edit
+                    </button>
+                    <button className="portal-button" type="button" onClick={() => handleDeleteStudent(student.studentId)}>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="portal-empty">
+              <h4>No students yet</h4>
+              <p>Add the first student record to begin tracking academic performance.</p>
             </div>
           )}
         </article>

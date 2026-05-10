@@ -5,13 +5,15 @@ import {
   getAssignments,
   getGrades,
   getGradesByStudent,
+  getNotifications,
+  getNotificationsByStudent,
   getStudentByUserId,
   getStudents,
 } from "../services/api";
 import { daysUntil, formatDisplayDate, percentage, riskMeta } from "../utils/portal";
 import "../styles/portal.css";
 
-function buildStudentAlerts(assignments, grades, prediction) {
+function buildStudentAlerts(assignments, grades, prediction, student) {
   const alerts = [];
   const assignmentMap = new Map(assignments.map((assignment) => [String(assignment.assignmentId), assignment]));
 
@@ -57,6 +59,16 @@ function buildStudentAlerts(assignments, grades, prediction) {
       title: `AI status: ${risk.label}`,
       body: prediction.suggestion || "Prediction available. Review it for study guidance.",
       tone: risk.tone,
+      date: new Date().toISOString(),
+    });
+  }
+
+  if (Number(student?.attendancePercentage || 0) > 0 && Number(student.attendancePercentage) < 75) {
+    alerts.push({
+      id: "low-attendance",
+      title: "Low attendance alert",
+      body: `Your current attendance is ${Math.round(Number(student.attendancePercentage))} percent. Aim to recover it before the next review.`,
+      tone: "danger",
       date: new Date().toISOString(),
     });
   }
@@ -123,10 +135,11 @@ export default function NotificationsPage() {
         if (user?.role === "STUDENT" && user?.id) {
           const studentResponse = await getStudentByUserId(user.id);
           const studentId = studentResponse?.data?.studentId;
-          const [assignmentResponse, gradeResponse, predictionResponse] = await Promise.all([
+          const [assignmentResponse, gradeResponse, predictionResponse, savedNotificationsResponse] = await Promise.all([
             getAssignments(),
             studentId ? getGradesByStudent(studentId) : Promise.resolve(null),
             studentId ? getAiPrediction(studentId).catch(() => null) : Promise.resolve(null),
+            studentId ? getNotificationsByStudent(studentId).catch(() => null) : Promise.resolve(null),
           ]);
 
           if (!active) return;
@@ -134,14 +147,23 @@ export default function NotificationsPage() {
           const nextAlerts = buildStudentAlerts(
             Array.isArray(assignmentResponse?.data) ? assignmentResponse.data : [],
             Array.isArray(gradeResponse?.data) ? gradeResponse.data : [],
-            predictionResponse?.data || null
+            predictionResponse?.data || null,
+            studentResponse?.data || null
           );
-          setAlerts(nextAlerts);
+          const savedAlerts = (Array.isArray(savedNotificationsResponse?.data) ? savedNotificationsResponse.data : []).map((item) => ({
+            id: `saved-${item.notificationId}`,
+            title: item.type || "Notification",
+            body: item.message,
+            tone: item.type === "ATTENDANCE" ? "danger" : item.type === "GRADE" ? "warning" : "info",
+            date: item.createdAt,
+          }));
+          setAlerts([...savedAlerts, ...nextAlerts]);
         } else {
-          const [assignmentResponse, gradeResponse, studentResponse] = await Promise.all([
+          const [assignmentResponse, gradeResponse, studentResponse, notificationResponse] = await Promise.all([
             getAssignments(),
             getGrades(),
             getStudents(),
+            getNotifications().catch(() => null),
           ]);
 
           if (!active) return;
@@ -151,7 +173,14 @@ export default function NotificationsPage() {
             Array.isArray(gradeResponse?.data) ? gradeResponse.data : [],
             Array.isArray(studentResponse?.data) ? studentResponse.data : []
           );
-          setAlerts(nextAlerts);
+          const savedAlerts = (Array.isArray(notificationResponse?.data) ? notificationResponse.data : []).map((item) => ({
+            id: `saved-${item.notificationId}`,
+            title: item.type || "Notification",
+            body: item.message,
+            tone: item.type === "ATTENDANCE" ? "danger" : item.type === "GRADE" ? "warning" : "info",
+            date: item.createdAt,
+          }));
+          setAlerts([...savedAlerts, ...nextAlerts]);
         }
       } catch (err) {
         if (!active) return;

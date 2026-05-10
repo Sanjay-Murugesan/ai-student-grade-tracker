@@ -5,7 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import "../styles/auth.css";
 
 const StudentLoginPage = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -20,7 +20,7 @@ const StudentLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await loginUser(username, password, "STUDENT");
+      const response = await loginUser(email, password, "STUDENT");
       const { token, user } = response.data;
       login(user, token);
       navigate("/student/dashboard");
@@ -43,9 +43,9 @@ const StudentLoginPage = () => {
           <form onSubmit={handleSubmit}>
             <input
               type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
 

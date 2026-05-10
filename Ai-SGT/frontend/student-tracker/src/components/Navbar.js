@@ -9,6 +9,7 @@ const pageTitles = {
   "/teacher/dashboard": "Teacher Dashboard",
   "/assignments": "Assignments",
   "/grades": "Grades",
+  "/attendance": "Attendance",
   "/ai-predict": "AI Predictions",
   "/ai-insights": "AI Insights",
   "/notifications": "Notifications",

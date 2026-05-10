@@ -1,0 +1,28 @@
+.attendance-page .portal-hero {
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.28), transparent 36%),
+    linear-gradient(135deg, #123047 0%, #24786f 54%, #e7b949 100%);
+}
+
+.attendance-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #edf2f7;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.attendance-row-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.attendance-row p {
+  margin: 0;
+  color: #667085;
+  font-size: 0.9rem;
+}

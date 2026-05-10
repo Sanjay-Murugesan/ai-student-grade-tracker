@@ -70,6 +70,9 @@ public class AssignmentService {
         existing.setDueDate(a.getDueDate());
         existing.setMaxMarks(a.getMaxMarks());
         existing.setPriority(a.getPriority());
+        existing.setStatus(a.getStatus());
+        existing.setCourseId(a.getCourseId());
+        existing.setInstructorId(a.getInstructorId());
         return repo.save(existing);
     }
 

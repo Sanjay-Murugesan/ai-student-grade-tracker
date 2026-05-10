@@ -21,6 +21,12 @@ const Icon = ({ name }) => {
           <path d="M4 19h3V9H4v10zm6 0h3V5h-3v14zm6 0h3v-7h-3v7z" />
         </svg>
       );
+    case "attendance":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
+          <path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V9h14v10zM7 11h5v5H7v-5z" />
+        </svg>
+      );
     case "ai":
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
@@ -56,6 +62,7 @@ export default function Sidebar({ open, onToggle, onLogout, role }) {
     { label: "Dashboard", route: dashboardRoute, icon: "dashboard" },
     { label: "Assignments", route: "/assignments", icon: "assignments" },
     { label: "Grades", route: "/grades", icon: "grades" },
+    { label: "Attendance", route: "/attendance", icon: "attendance" },
     { label: "AI Predict", route: "/ai-predict", icon: "ai" },
     { label: "AI Insights", route: "/ai-insights", icon: "analytics" },
     { label: "Notifications", route: "/notifications", icon: "notifications" },

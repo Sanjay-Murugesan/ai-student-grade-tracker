@@ -2,6 +2,11 @@ HELP.md
 target/
 bin/
 backend/
+!backend/
+!backend/src/
+!backend/src/main/
+!backend/src/main/java/
+!backend/src/main/java/**
 *.class
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

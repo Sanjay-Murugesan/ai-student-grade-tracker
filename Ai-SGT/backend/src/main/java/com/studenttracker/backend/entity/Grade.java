@@ -23,6 +23,28 @@ public class Grade {
     @Column(name = "assignment_id")
     private Long assignmentId;
 
+    @Column(name = "course_id")
+    private Long courseId;
+
+    @Column(name = "internal_marks")
+    private Double internalMarks;
+
+    @Column(name = "semester_marks")
+    private Double semesterMarks;
+
+    @Column(name = "assignment_marks")
+    private Double assignmentMarks;
+
+    private Double marks;
+
+    @Column(name = "grade")
+    private String grade;
+
+    private Integer semester;
+
+    @Column(name = "grade_points")
+    private Double gradePoints;
+
     private Double score;
 
     @Column(length = 1000)

@@ -151,7 +151,7 @@ export default function ProfilePage() {
             </div>
             <div className="portal-list-item">
               <div>
-                <strong>Year</strong>
+                <strong>Semester</strong>
                 <p>{profile.year || "Not set"}</p>
               </div>
             </div>
@@ -195,13 +195,17 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="portal-field">
-                <label htmlFor="year">Year</label>
+                <label htmlFor="year">Semester</label>
                 <select id="year" name="year" value={form.year || ""} onChange={handleChange}>
-                  <option value="">Select year</option>
-                  <option value="1">Year 1</option>
-                  <option value="2">Year 2</option>
-                  <option value="3">Year 3</option>
-                  <option value="4">Year 4</option>
+                  <option value="">Select semester</option>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                  <option value="3">Semester 3</option>
+                  <option value="4">Semester 4</option>
+                  <option value="5">Semester 5</option>
+                  <option value="6">Semester 6</option>
+                  <option value="7">Semester 7</option>
+                  <option value="8">Semester 8</option>
                 </select>
               </div>
 

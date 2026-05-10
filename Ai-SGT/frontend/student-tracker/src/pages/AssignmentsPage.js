@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import {
   getAssignments, addAssignment, updateAssignment, deleteAssignment,
+  getStudentByUserId, getSubmissionsByStudent, submitAssignment,
 } from "../services/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,6 +26,8 @@ export default function AssignmentsPage() {
   const isTeacher   = user?.role === "INSTRUCTOR";
 
   const [assignments, setAssignments] = useState([]);
+  const [student, setStudent] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [submitting,  setSubmitting]  = useState(false);
   const [showForm,    setShowForm]    = useState(false);
@@ -48,6 +51,33 @@ export default function AssignmentsPage() {
   };
 
   useEffect(() => { fetchAssignments(); }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadStudentSubmissions() {
+      if (isTeacher || !user?.id) return;
+      try {
+        const studentResponse = await getStudentByUserId(user.id);
+        const studentRecord = studentResponse?.data || null;
+        if (!active) return;
+        setStudent(studentRecord);
+
+        if (studentRecord?.studentId) {
+          const submissionResponse = await getSubmissionsByStudent(studentRecord.studentId);
+          if (!active) return;
+          setSubmissions(Array.isArray(submissionResponse?.data) ? submissionResponse.data : []);
+        }
+      } catch {
+        toast.error("Failed to load your submission status.");
+      }
+    }
+
+    loadStudentSubmissions();
+    return () => {
+      active = false;
+    };
+  }, [isTeacher, user?.id]);
 
   /* ── Stats ── */
   const stats = useMemo(() => {
@@ -146,6 +176,26 @@ export default function AssignmentsPage() {
     }
   };
 
+  const handleSubmitAssignment = async (assignmentId) => {
+    if (!student?.studentId) {
+      toast.error("Student profile not found.");
+      return;
+    }
+
+    try {
+      await submitAssignment({
+        studentId: student.studentId,
+        assignmentId,
+        status: "SUBMITTED",
+      });
+      const submissionResponse = await getSubmissionsByStudent(student.studentId);
+      setSubmissions(Array.isArray(submissionResponse?.data) ? submissionResponse.data : []);
+      toast.success("Assignment marked as submitted.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to submit assignment.");
+    }
+  };
+
   const handleCancel = () => {
     setForm(EMPTY); setEditingId(null); setShowForm(false);
   };
@@ -154,6 +204,11 @@ export default function AssignmentsPage() {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: value }));
   };
+
+  const submittedAssignmentIds = useMemo(
+    () => new Set(submissions.map((submission) => String(submission.assignmentId))),
+    [submissions]
+  );
 
   return (
     <div className="assignments-page">
@@ -334,7 +389,7 @@ export default function AssignmentsPage() {
             return (
               <div
                 key={a.assignmentId}
-                className={`asgn-card ${cls}`}
+                className={`asgn-card ${submittedAssignmentIds.has(String(a.assignmentId)) ? "upcoming" : cls}`}
               >
                 {/* Top row */}
                 <div className="asgn-card-top">
@@ -363,6 +418,19 @@ export default function AssignmentsPage() {
                         title="Delete"
                         onClick={() => handleDelete(a.assignmentId)}
                       >🗑️</button>
+                    </div>
+                  )}
+                  {!isTeacher && (
+                    <div className="asgn-card-actions">
+                      {submittedAssignmentIds.has(String(a.assignmentId)) ? (
+                        <span className="asgn-priority-badge low">completed</span>
+                      ) : (
+                        <button
+                          className="asgn-action-btn"
+                          title="Submit"
+                          onClick={() => handleSubmitAssignment(a.assignmentId)}
+                        >✓</button>
+                      )}
                     </div>
                   )}
                 </div>

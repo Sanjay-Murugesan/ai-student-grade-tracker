@@ -31,6 +31,15 @@ public class Student {
     @Column(name = "gpa")
     private Double gpa = 0.0;
 
+    @Column(name = "cgpa")
+    private Double cgpa = 0.0;
+
+    @Column(name = "attendance_percentage")
+    private Double attendancePercentage = 0.0;
+
+    @Column(name = "subject_attendance", length = 2000)
+    private String subjectAttendance;
+
     @PrePersist
     protected void onCreate() {
         enrollmentDate = LocalDateTime.now();
