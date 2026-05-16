@@ -3,7 +3,7 @@ import axios from "axios";
 /**
  * Shared Axios client for all backend API requests.
  */
-export const API_BASE_URL = process.env.REACT_APP_API_BASE || "http://localhost:8080";
+export const API_BASE_URL = process.env.REACT_APP_API_BASE || "https://ai-student-grade-tracker-production.up.railway.app";
 
 const api = axios.create({
   baseURL: API_BASE_URL,

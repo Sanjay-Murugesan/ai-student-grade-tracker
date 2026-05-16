@@ -217,7 +217,15 @@ export default function AssignmentsPage() {
       {/* ── Header ── */}
       <div className="asgn-header">
         <div className="asgn-header-left">
-          <h1>Assignments Dashboard</h1>
+          <h1>
+  {isTeacher ? "Assignment Management" : "My Assignments"}
+</h1>
+
+<p>
+  {isTeacher
+    ? "Create, manage and monitor assignments"
+    : "Track, submit and monitor your assignments"}
+</p>
           <p>Manage and track all assignments in one place</p>
         </div>
         <div className="asgn-header-right">
@@ -368,7 +376,11 @@ export default function AssignmentsPage() {
         <div className="asgn-empty">
           <div className="asgn-empty-icon">📭</div>
           <h4>No assignments found</h4>
-          <p>{search ? "No assignments match your search." : "No assignments yet."}</p>
+      <p>
+  {isTeacher
+    ? "No assignments created yet."
+    : "No assignments have been assigned yet."}
+</p>
           {isTeacher && !search && (
             <button className="asgn-new-btn" onClick={() => setShowForm(true)}>
               + Create First Assignment
@@ -423,13 +435,17 @@ export default function AssignmentsPage() {
                   {!isTeacher && (
                     <div className="asgn-card-actions">
                       {submittedAssignmentIds.has(String(a.assignmentId)) ? (
-                        <span className="asgn-priority-badge low">completed</span>
+                        <span className="asgn-priority-badge low">✅ Submitted</span>
                       ) : (
                         <button
                           className="asgn-action-btn"
                           title="Submit"
                           onClick={() => handleSubmitAssignment(a.assignmentId)}
-                        >✓</button>
+                      
+                        >
+                         📤 Submit Assignment
+                         </button>
+
                       )}
                     </div>
                   )}
@@ -445,7 +461,9 @@ export default function AssignmentsPage() {
                   <span className={`asgn-due-badge ${cls}`}>
                     🕐 {label}
                   </span>
-                  <span className="asgn-id"># ID: {a.assignmentId}</span>
+                  {isTeacher && (
+  <span className="asgn-id"># ID: {a.assignmentId}</span>
+)}
                   <div className="asgn-progress">
                     <div
                       className="asgn-progress-fill"
