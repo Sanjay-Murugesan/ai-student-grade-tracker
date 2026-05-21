@@ -1,11 +1,15 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+
 import {
+  addGrade,
+  updateGrade,
+  deleteGrade,
   getStudents,
   getAssignments,
-  addGrade,
   getGradesByStudent,
-  getStudentByUserId
+  getStudentByUserId,
 } from "../services/api";
+
 import StudentChart from "../components/StudentChart";
 import "../styles/grades.css";
 import { AuthContext } from "../context/AuthContext";
@@ -15,22 +19,20 @@ function cleanId(raw) {
   return raw.toString().trim().replace(/\.+$/g, "").replace(/[^\d]/g, "");
 }
 
-/**
- * GradesPage (robust)
- * - Trims user input
- * - Removes stray dots from IDs
- * - Shows messages & loading states
- * - Logs the exact request URL sent
- */
 export default function GradesPage() {
   const { user } = useContext(AuthContext);
+
   const isTeacher = user?.role === "INSTRUCTOR";
+
   const [students, setStudents] = useState([]);
   const [studentProfile, setStudentProfile] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [grades, setGrades] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+
+  const [editingGrade, setEditingGrade] = useState(null);
 
   const [form, setForm] = useState({
     studentId: "",
@@ -38,23 +40,28 @@ export default function GradesPage() {
     internalMarks: "",
     semesterMarks: "",
     assignmentMarks: "",
-    semester: ""
+    semester: "",
   });
 
   const fetchGrades = useCallback(async (rawStudentId) => {
     setMessage(null);
+
     const studentIdClean = cleanId(rawStudentId);
+
     if (!studentIdClean) {
       setMessage("Please select a valid student to view grades.");
       return;
     }
 
     setLoading(true);
+
     try {
-      // log exact URL for debugging
       console.log(`Requesting grades for student -> /grades/student/${studentIdClean}`);
+
       const res = await getGradesByStudent(studentIdClean);
+
       const gradesData = Array.isArray(res.data) ? res.data : [];
+
       setGrades(gradesData);
 
       if (gradesData.length === 0) {
@@ -62,7 +69,7 @@ export default function GradesPage() {
       }
     } catch (err) {
       console.error("Failed to fetch grades:", err);
-      setMessage("Failed to fetch grades. Check server & CORS.");
+      setMessage("Failed to fetch grades. Check server and CORS.");
       setGrades([]);
     } finally {
       setLoading(false);
@@ -70,42 +77,65 @@ export default function GradesPage() {
   }, []);
 
   useEffect(() => {
-    // Load assignments for both roles
     getAssignments()
-      .then(r => setAssignments(Array.isArray(r.data) ? r.data : []))
-      .catch(err => {
+      .then((res) => {
+        setAssignments(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => {
         console.error("Failed to load assignments", err);
         setMessage("Failed to load assignments from server.");
       });
 
     if (isTeacher) {
       getStudents()
-        .then(r => setStudents(Array.isArray(r.data) ? r.data : []))
-        .catch(err => {
+        .then((res) => {
+          setStudents(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch((err) => {
           console.error("Failed to load students", err);
           setMessage("Failed to load students from server.");
         });
     } else if (user?.id) {
       getStudentByUserId(user.id)
-        .then(r => {
-          const student = r.data;
+        .then((res) => {
+          const student = res.data;
+
           if (student?.studentId) {
             setStudentProfile(student);
-            setForm((prev) => ({ ...prev, studentId: String(student.studentId) }));
+
+            setForm((prev) => ({
+              ...prev,
+              studentId: String(student.studentId),
+            }));
+
             fetchGrades(student.studentId);
           } else {
             setMessage("Student profile not found for this account.");
           }
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Failed to load student profile", err);
           setMessage("Failed to load student profile.");
         });
     }
   }, [fetchGrades, isTeacher, user]);
 
+  const resetForm = () => {
+    setEditingGrade(null);
+
+    setForm({
+      studentId: "",
+      assignmentId: "",
+      internalMarks: "",
+      semesterMarks: "",
+      assignmentMarks: "",
+      semester: "",
+    });
+  };
+
   const handleAddGrade = async (e) => {
     e.preventDefault();
+
     setMessage(null);
 
     const studentIdClean = cleanId(form.studentId);
@@ -122,26 +152,97 @@ export default function GradesPage() {
     }
 
     setLoading(true);
+
     try {
-      const assignment = assignments.find((item) => String(item.assignmentId) === assignmentIdClean);
-      await addGrade({
+      const assignment = assignments.find(
+        (item) => String(item.assignmentId) === assignmentIdClean
+      );
+
+      const assignmentMarksValue = Number(form.assignmentMarks) || 0;
+
+      const payload = {
         studentId: Number(studentIdClean),
         assignmentId: Number(assignmentIdClean),
         courseId: assignment?.courseId || null,
+
         internalMarks: Number(form.internalMarks) || 0,
         semesterMarks: Number(form.semesterMarks) || 0,
-        assignmentMarks: Number(form.assignmentMarks) || 0,
-        score: Number(form.assignmentMarks) || 0,
-        marks: Number(form.assignmentMarks) || 0,
-        semester: Number(form.semester) || null
+        assignmentMarks: assignmentMarksValue,
+
+        score: assignmentMarksValue,
+        marks: assignmentMarksValue,
+
+        semester: form.semester ? Number(form.semester) : null,
+      };
+
+      if (editingGrade) {
+        await updateGrade(editingGrade.gradeId, {
+          ...editingGrade,
+          ...payload,
+        });
+
+        setMessage("Grade updated successfully.");
+      } else {
+        await addGrade(payload);
+
+        setMessage("Grade added successfully.");
+      }
+
+      setEditingGrade(null);
+
+      setForm({
+        studentId: "",
+        assignmentId: "",
+        internalMarks: "",
+        semesterMarks: "",
+        assignmentMarks: "",
+        semester: "",
       });
-      setMessage("Grade added successfully.");
-      setForm({ studentId: "", assignmentId: "", internalMarks: "", semesterMarks: "", assignmentMarks: "", semester: "" });
-      // Refresh grades for this student
+
       await fetchGrades(studentIdClean);
     } catch (err) {
-      console.error("Error adding grade:", err);
-      setMessage("Failed to add grade. Check server logs and connection.");
+      console.error("Error saving grade:", err);
+      setMessage("Failed to save grade. Check server logs and connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditGrade = (grade) => {
+    setEditingGrade(grade);
+
+    setForm({
+      studentId: grade.studentId ? String(grade.studentId) : "",
+      assignmentId: grade.assignmentId ? String(grade.assignmentId) : "",
+      internalMarks: grade.internalMarks ?? "",
+      semesterMarks: grade.semesterMarks ?? "",
+      assignmentMarks: grade.assignmentMarks ?? grade.marks ?? grade.score ?? "",
+      semester: grade.semester ?? "",
+    });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const handleDeleteGrade = async (gradeId, studentId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this grade?");
+
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      await deleteGrade(gradeId);
+
+      setMessage("Grade deleted successfully.");
+
+      await fetchGrades(studentId);
+    } catch (err) {
+      console.error("Error deleting grade:", err);
+      setMessage("Failed to delete grade.");
     } finally {
       setLoading(false);
     }
@@ -149,18 +250,32 @@ export default function GradesPage() {
 
   const assignmentMap = useMemo(() => {
     const map = new Map();
-    assignments.forEach(a => {
-      map.set(String(a.assignmentId), a);
+
+    assignments.forEach((assignment) => {
+      map.set(String(assignment.assignmentId), assignment);
     });
+
     return map;
   }, [assignments]);
 
   const stats = useMemo(() => {
     const total = grades.length;
-    const sum = grades.reduce((acc, g) => acc + Number(g.score || 0), 0);
+
+    const sum = grades.reduce((acc, grade) => {
+      return acc + Number(grade.score || grade.marks || grade.assignmentMarks || 0);
+    }, 0);
+
     const avg = total > 0 ? Math.round(sum / total) : 0;
-    const max = grades.reduce((acc, g) => Math.max(acc, Number(g.score || 0)), 0);
-    return { total, avg, max };
+
+    const max = grades.reduce((acc, grade) => {
+      return Math.max(acc, Number(grade.score || grade.marks || grade.assignmentMarks || 0));
+    }, 0);
+
+    return {
+      total,
+      avg,
+      max,
+    };
   }, [grades]);
 
   const gridClass = isTeacher ? "grades-grid" : "grades-grid single";
@@ -170,8 +285,11 @@ export default function GradesPage() {
       <div className="grades-header">
         <div>
           <h2 className="grades-title">Grades & Marks</h2>
-          <p className="grades-subtitle">Record scores and track student performance at a glance.</p>
+          <p className="grades-subtitle">
+            Record scores and track student performance at a glance.
+          </p>
         </div>
+
         <div className="grades-actions">
           <button
             type="button"
@@ -189,7 +307,10 @@ export default function GradesPage() {
       <div className={gridClass}>
         {isTeacher && (
           <div className="grades-card">
-            <h5 className="grades-card-title">Add Grade</h5>
+            <h5 className="grades-card-title">
+              {editingGrade ? "Edit Grade" : "Add Grade"}
+            </h5>
+
             <form onSubmit={handleAddGrade} className="grades-form">
               <label className="grades-label">
                 Student
@@ -197,12 +318,18 @@ export default function GradesPage() {
                   className="grades-input"
                   required
                   value={form.studentId}
-                  onChange={(e) => setForm({ ...form, studentId: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      studentId: e.target.value,
+                    })
+                  }
                 >
                   <option value="">Select Student</option>
-                  {students.map(s => (
-                    <option key={s.studentId} value={String(s.studentId)}>
-                      {s.name}
+
+                  {students.map((student) => (
+                    <option key={student.studentId} value={String(student.studentId)}>
+                      {student.name}
                     </option>
                   ))}
                 </select>
@@ -214,12 +341,21 @@ export default function GradesPage() {
                   className="grades-input"
                   required
                   value={form.assignmentId}
-                  onChange={(e) => setForm({ ...form, assignmentId: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      assignmentId: e.target.value,
+                    })
+                  }
                 >
                   <option value="">Select Assignment</option>
-                  {assignments.map(a => (
-                    <option key={a.assignmentId} value={String(a.assignmentId)}>
-                      {a.title}
+
+                  {assignments.map((assignment) => (
+                    <option
+                      key={assignment.assignmentId}
+                      value={String(assignment.assignmentId)}
+                    >
+                      {assignment.title}
                     </option>
                   ))}
                 </select>
@@ -233,7 +369,12 @@ export default function GradesPage() {
                   className="grades-input"
                   placeholder="Internal marks"
                   value={form.internalMarks}
-                  onChange={(e) => setForm({ ...form, internalMarks: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      internalMarks: e.target.value,
+                    })
+                  }
                 />
               </label>
 
@@ -245,7 +386,12 @@ export default function GradesPage() {
                   className="grades-input"
                   placeholder="Semester marks"
                   value={form.semesterMarks}
-                  onChange={(e) => setForm({ ...form, semesterMarks: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      semesterMarks: e.target.value,
+                    })
+                  }
                 />
               </label>
 
@@ -258,7 +404,12 @@ export default function GradesPage() {
                   className="grades-input"
                   placeholder="Assignment marks"
                   value={form.assignmentMarks}
-                  onChange={(e) => setForm({ ...form, assignmentMarks: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      assignmentMarks: e.target.value,
+                    })
+                  }
                 />
               </label>
 
@@ -270,39 +421,63 @@ export default function GradesPage() {
                   className="grades-input"
                   placeholder="Semester"
                   value={form.semester}
-                  onChange={(e) => setForm({ ...form, semester: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      semester: e.target.value,
+                    })
+                  }
                 />
               </label>
 
               <button className="grades-btn primary" disabled={loading}>
-                {loading ? "Saving..." : "Add Grade"}
+                {loading ? "Saving..." : editingGrade ? "Update Grade" : "Add Grade"}
               </button>
+
+              {editingGrade && (
+                <button
+                  type="button"
+                  className="grades-btn ghost"
+                  onClick={resetForm}
+                >
+                  Cancel Edit
+                </button>
+              )}
             </form>
           </div>
         )}
 
         <div className="grades-card stats">
           <h5 className="grades-card-title">Overview</h5>
+
           <div className="grades-stats">
             <div className="grades-stat">
               <span className="grades-stat-label">Total</span>
               <span className="grades-stat-value">{stats.total}</span>
             </div>
+
             <div className="grades-stat">
               <span className="grades-stat-label">Average</span>
               <span className="grades-stat-value">{stats.avg}</span>
             </div>
+
             <div className="grades-stat">
               <span className="grades-stat-label">Highest</span>
               <span className="grades-stat-value">{stats.max}</span>
             </div>
+
             <div className="grades-stat">
               <span className="grades-stat-label">GPA</span>
-              <span className="grades-stat-value">{Number(studentProfile?.gpa || 0).toFixed(2)}</span>
+              <span className="grades-stat-value">
+                {Number(studentProfile?.gpa || 0).toFixed(2)}
+              </span>
             </div>
+
             <div className="grades-stat">
               <span className="grades-stat-label">CGPA</span>
-              <span className="grades-stat-value">{Number(studentProfile?.cgpa || studentProfile?.gpa || 0).toFixed(2)}</span>
+              <span className="grades-stat-value">
+                {Number(studentProfile?.cgpa || studentProfile?.gpa || 0).toFixed(2)}
+              </span>
             </div>
           </div>
         </div>
@@ -315,32 +490,78 @@ export default function GradesPage() {
         </div>
 
         {grades.length === 0 ? (
-          <div className="grades-empty">No grades yet. Select a student to view or add scores.</div>
+          <div className="grades-empty">
+            No grades yet. Select a student to view or add scores.
+          </div>
         ) : (
           <div className="grades-list">
-            {grades.map(g => {
-              const assignment = assignmentMap.get(String(g.assignmentId));
+            {grades.map((grade) => {
+              const assignment = assignmentMap.get(String(grade.assignmentId));
+
               const maxMarks = assignment?.maxMarks ?? null;
-              const progress = maxMarks ? Math.min(100, Math.round((g.score / maxMarks) * 100)) : null;
+
+              const currentScore =
+                grade.marks ?? grade.score ?? grade.assignmentMarks ?? 0;
+
+              const progress = maxMarks
+                ? Math.min(100, Math.round((Number(currentScore) / maxMarks) * 100))
+                : null;
 
               return (
-                <div key={g.gradeId} className="grades-item">
+                <div key={grade.gradeId} className="grades-item">
                   <div className="grades-item-main">
                     <div className="grades-item-title">
-                      {assignment?.title || `Assignment #${g.assignmentId}`}
+                      {assignment?.title || `Assignment #${grade.assignmentId}`}
                     </div>
+
                     <div className="grades-item-meta">
-                      ID: {g.assignmentId} {g.grade ? `· Grade ${g.grade}` : ""} {g.semester ? `· Sem ${g.semester}` : ""}
+                      ID: {grade.assignmentId}
+                      {grade.grade ? ` · Grade ${grade.grade}` : ""}
+                      {grade.semester ? ` · Sem ${grade.semester}` : ""}
                     </div>
+
+                    {grade.feedback && (
+                      <div className="grades-item-meta">
+                        Feedback: {grade.feedback}
+                      </div>
+                    )}
                   </div>
 
                   <div className="grades-item-score">
                     <div className="grades-score-pill">
-                      {g.marks ?? g.score}{maxMarks ? ` / ${maxMarks}` : ""} {g.gradePoints ? `· GP ${g.gradePoints}` : ""}
+                      {currentScore}
+                      {maxMarks ? ` / ${maxMarks}` : ""}
+                      {grade.gradePoints ? ` · GP ${grade.gradePoints}` : ""}
                     </div>
+
                     {progress !== null && (
                       <div className="grades-progress">
-                        <div className="grades-progress-bar" style={{ width: `${progress}%` }}></div>
+                        <div
+                          className="grades-progress-bar"
+                          style={{ width: `${progress}%` }}
+                        ></div>
+                      </div>
+                    )}
+
+                    {isTeacher && (
+                      <div className="grades-item-actions">
+                        <button
+                          type="button"
+                          className="grades-small-btn edit"
+                          onClick={() => handleEditGrade(grade)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className="grades-small-btn delete"
+                          onClick={() =>
+                            handleDeleteGrade(grade.gradeId, grade.studentId)
+                          }
+                        >
+                          Delete
+                        </button>
                       </div>
                     )}
                   </div>
