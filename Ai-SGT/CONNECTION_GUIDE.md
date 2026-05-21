@@ -149,7 +149,7 @@ This Java class automatically maps to the `students` table in MySQL.
 
 4. BACKEND (Spring Boot)
    ├─ Receives request at StudentController
-   ├─ Calls StudentService.getAllStudents()
+   ├─ Calls StudentService.getStudents()
    └─ StudentService queries database via StudentRepository
 
 5. DATABASE (MySQL)

@@ -6,9 +6,12 @@
   --grades-border: rgba(148, 163, 184, 0.2);
   --grades-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
   --grades-accent: #0f766e;
+  --grades-accent-dark: #0b5f59;
   --grades-accent-soft: rgba(15, 118, 110, 0.15);
   --grades-text: #0f172a;
   --grades-muted: #64748b;
+  --grades-danger: #ef4444;
+  --grades-warning: #facc15;
 }
 
 .grades-container {
@@ -30,11 +33,13 @@
   font-size: 32px;
   font-weight: 800;
   margin: 0 0 6px;
+  color: var(--grades-text);
 }
 
 .grades-subtitle {
   margin: 0;
   color: var(--grades-muted);
+  font-size: 15px;
 }
 
 .grades-actions {
@@ -49,6 +54,7 @@
   padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 20px;
+  font-weight: 600;
 }
 
 .grades-grid {
@@ -74,8 +80,9 @@
 
 .grades-card-title {
   margin: 0 0 16px;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 18px;
+  color: var(--grades-text);
 }
 
 .grades-form {
@@ -87,11 +94,12 @@
   display: grid;
   gap: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--grades-muted);
 }
 
 .grades-input {
+  width: 100%;
   border: 1px solid var(--grades-border);
   border-radius: 12px;
   padding: 12px 14px;
@@ -110,16 +118,20 @@
 .grades-btn {
   border: none;
   border-radius: 12px;
-  padding: 10px 18px;
-  font-weight: 600;
+  padding: 11px 18px;
+  font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .grades-btn.primary {
   background: var(--grades-accent);
-  color: #fff;
+  color: #ffffff;
   box-shadow: 0 10px 20px rgba(15, 118, 110, 0.25);
+}
+
+.grades-btn.primary:hover {
+  background: var(--grades-accent-dark);
 }
 
 .grades-btn.ghost {
@@ -138,6 +150,10 @@
   transform: translateY(-2px);
 }
 
+.grades-card.stats {
+  height: fit-content;
+}
+
 .grades-stats {
   display: grid;
   gap: 12px;
@@ -147,21 +163,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
+  padding: 13px 14px;
   border-radius: 12px;
   background: #f8fafc;
 }
 
 .grades-stat-label {
   color: var(--grades-muted);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 13px;
 }
 
 .grades-stat-value {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--grades-accent);
+}
+
+.grades-list-card {
+  margin-top: 20px;
 }
 
 .grades-list-header {
@@ -174,6 +194,7 @@
 .grades-count {
   font-size: 12px;
   color: var(--grades-muted);
+  font-weight: 700;
 }
 
 .grades-empty {
@@ -182,6 +203,7 @@
   color: var(--grades-muted);
   background: #f8fafc;
   border-radius: 12px;
+  font-weight: 600;
 }
 
 .grades-list {
@@ -200,18 +222,26 @@
   background: #ffffff;
 }
 
+.grades-item-main {
+  flex: 1;
+}
+
 .grades-item-title {
-  font-weight: 700;
+  font-weight: 800;
+  color: var(--grades-text);
+  margin-bottom: 4px;
 }
 
 .grades-item-meta {
   font-size: 12px;
   color: var(--grades-muted);
+  font-weight: 600;
+  margin-top: 3px;
 }
 
 .grades-item-score {
   text-align: right;
-  min-width: 140px;
+  min-width: 170px;
 }
 
 .grades-score-pill {
@@ -222,7 +252,7 @@
   border-radius: 999px;
   background: var(--grades-accent-soft);
   color: var(--grades-accent);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 13px;
 }
 
@@ -237,10 +267,44 @@
 .grades-progress-bar {
   height: 100%;
   background: var(--grades-accent);
+  border-radius: 999px;
+}
+
+.grades-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.grades-small-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.grades-small-btn.edit {
+  background: var(--grades-warning);
+  color: #422006;
+}
+
+.grades-small-btn.delete {
+  background: var(--grades-danger);
+  color: #ffffff;
+}
+
+.grades-small-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .grades-chart-card {
   margin-top: 24px;
+  min-height: 300px;
 }
 
 @media (max-width: 900px) {
@@ -252,11 +316,23 @@
   .grades-grid {
     grid-template-columns: 1fr;
   }
+
+  .grades-actions {
+    width: 100%;
+  }
+
+  .grades-actions .grades-btn {
+    width: 100%;
+  }
 }
 
 @media (max-width: 600px) {
   .grades-container {
     padding: 20px;
+  }
+
+  .grades-title {
+    font-size: 26px;
   }
 
   .grades-item {
@@ -267,5 +343,14 @@
   .grades-item-score {
     text-align: left;
     width: 100%;
+    min-width: unset;
+  }
+
+  .grades-item-actions {
+    justify-content: flex-start;
+  }
+
+  .grades-small-btn {
+    flex: 1;
   }
 }

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  getAllSubmissions,
-  updateSubmissionGrade,
+  getSubmissions,
+  updateSubmission,
 } from "../services/api";
 
 export default function SubmissionsPage() {
@@ -19,7 +19,7 @@ export default function SubmissionsPage() {
 
     try {
 
-      const res = await getAllSubmissions();
+      const res = await getSubmissions();
 
       setSubmissions(res.data || []);
 
@@ -38,13 +38,13 @@ export default function SubmissionsPage() {
 
     const marks = prompt("Enter marks");
 
-    const feedback = prompt("Enter feedback");
-
     if (marks === null) return;
+
+    const feedback = prompt("Enter feedback");
 
     try {
 
-      await updateSubmissionGrade(
+      await updateSubmission(
         submission.submissionId,
         {
           ...submission,

@@ -1,7 +1,7 @@
 // src/pages/StudentsPage.jsx
 
 import React, { useEffect, useState } from "react";
-import { getAllStudents } from "../services/api";
+import { getStudents } from "../services/api";
 
 import "../styles/theme.css";
 
@@ -100,7 +100,7 @@ export default function StudentsPage() {
 
     try {
 
-      const res = await getAllStudents();
+      const res = await getStudents();
 
       setStudents(Array.isArray(res.data) ? res.data : []);
 

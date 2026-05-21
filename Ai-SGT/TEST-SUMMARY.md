@@ -79,7 +79,7 @@ Tests student profile management.
 **Test Cases:**
 - ✅ `testCreateStudent()` - Register new student
 - ✅ `testGetStudentById()` - Retrieve student details
-- ✅ `testGetAllStudents()` - List all students
+- ✅ `testGetStudents()` - List all students
 - ✅ `testUpdateStudentGPA()` - Update GPA calculation
 - ✅ `testDeleteStudent()` - Remove student record
 - ✅ `testGetStudentsByDepartment()` - Filter by department
