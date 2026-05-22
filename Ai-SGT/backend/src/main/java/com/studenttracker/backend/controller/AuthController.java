@@ -48,7 +48,6 @@ public class AuthController {
             // ================= VALIDATION =================
 
             if (request == null || request.isEmpty()) {
-
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of(
@@ -58,23 +57,16 @@ public class AuthController {
             }
 
             String username = (String) request.get("username");
-
             String email = (String) request.get("email");
-
             String password = (String) request.get("password");
-
             String role = (String) request.get("role");
-
             String name = (String) request.get("name");
-
             String department = (String) request.get("department");
-
             Object yearObj = request.get("year");
 
             // ================= REQUIRED FIELD CHECK =================
 
             if (username == null || username.trim().isEmpty()) {
-
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of(
@@ -84,7 +76,6 @@ public class AuthController {
             }
 
             if (email == null || email.trim().isEmpty()) {
-
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of(
@@ -94,7 +85,6 @@ public class AuthController {
             }
 
             if (password == null || password.trim().isEmpty()) {
-
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of(
@@ -104,7 +94,6 @@ public class AuthController {
             }
 
             if (role == null || role.trim().isEmpty()) {
-
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of(
@@ -113,6 +102,9 @@ public class AuthController {
                         ));
             }
 
+            String cleanUsername = username.trim();
+            String cleanEmail = email.trim().toLowerCase();
+
             // ================= YEAR PARSING =================
 
             Integer year = null;
@@ -120,23 +112,17 @@ public class AuthController {
             if (yearObj != null) {
 
                 if (yearObj instanceof Integer) {
-
                     year = (Integer) yearObj;
 
                 } else if (yearObj instanceof Double) {
-
                     year = ((Double) yearObj).intValue();
 
                 } else if (yearObj instanceof String) {
 
                     try {
-
-                        year = Integer.parseInt(
-                                (String) yearObj
-                        );
+                        year = Integer.parseInt((String) yearObj);
 
                     } catch (NumberFormatException e) {
-
                         return ResponseEntity
                                 .status(HttpStatus.BAD_REQUEST)
                                 .body(Map.of(
@@ -150,12 +136,9 @@ public class AuthController {
             // ================= EXISTING USER CHECK =================
 
             Optional<User> existingUser =
-                    userService.getUserByUsername(
-                            username.trim()
-                    );
+                    userService.getUserByUsername(cleanUsername);
 
             if (existingUser.isPresent()) {
-
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of(
@@ -165,12 +148,9 @@ public class AuthController {
             }
 
             Optional<User> existingEmail =
-                    userService.getUserByEmail(
-                            email.trim()
-                    );
+                    userService.getUserByEmail(cleanEmail);
 
             if (existingEmail.isPresent()) {
-
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of(
@@ -183,24 +163,19 @@ public class AuthController {
 
             User user = new User();
 
-            user.setUsername(username.trim());
-
-            user.setEmail(email.trim());
-
+            user.setUsername(cleanUsername);
+            user.setEmail(cleanEmail);
             user.setPassword(password);
 
             // ================= ROLE SET =================
 
             if ("STUDENT".equalsIgnoreCase(role)) {
-
                 user.setRole(UserRole.STUDENT);
 
             } else if ("INSTRUCTOR".equalsIgnoreCase(role)) {
-
                 user.setRole(UserRole.INSTRUCTOR);
 
             } else {
-
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of(
@@ -211,8 +186,7 @@ public class AuthController {
 
             // ================= SAVE USER =================
 
-            User createdUser =
-                    userService.createUser(user);
+            User createdUser = userService.createUser(user);
 
             // ================= CREATE STUDENT =================
 
@@ -224,15 +198,15 @@ public class AuthController {
 
                 student.setName(
                         name != null && !name.isBlank()
-                                ? name
+                                ? name.trim()
                                 : createdUser.getUsername()
                 );
 
                 student.setEmail(createdUser.getEmail());
 
                 student.setDepartment(
-                        department != null
-                                ? department
+                        department != null && !department.isBlank()
+                                ? department.trim()
                                 : "IT"
                 );
 
@@ -247,48 +221,34 @@ public class AuthController {
 
             // ================= CREATE INSTRUCTOR =================
 
-            else if (
-                    createdUser.getRole()
-                            == UserRole.INSTRUCTOR
-            ) {
+            else if (createdUser.getRole() == UserRole.INSTRUCTOR) {
 
-                Instructor instructor =
-                        new Instructor();
+                Instructor instructor = new Instructor();
 
-                instructor.setUserId(
-                        createdUser.getId()
-                );
+                instructor.setUserId(createdUser.getId());
 
                 instructor.setName(
                         name != null && !name.isBlank()
-                                ? name
+                                ? name.trim()
                                 : createdUser.getUsername()
                 );
 
-                instructor.setEmail(
-                        createdUser.getEmail()
-                );
+                instructor.setEmail(createdUser.getEmail());
 
                 instructor.setDepartment(
-                        department != null
-                                ? department
+                        department != null && !department.isBlank()
+                                ? department.trim()
                                 : "IT"
                 );
 
-                instructorService.createInstructor(
-                        instructor
-                );
+                instructorService.createInstructor(instructor);
             }
 
             // ================= SUCCESS RESPONSE =================
 
-            Map<String, Object> response =
-                    new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
 
-            response.put(
-                    "message",
-                    "Signup successful"
-            );
+            response.put("message", "Signup successful");
 
             response.put(
                     "user",
@@ -319,8 +279,7 @@ public class AuthController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "message",
-                            "Signup failed: "
-                                    + e.getMessage()
+                            "Signup failed: " + e.getMessage()
                     ));
         }
     }
@@ -334,22 +293,57 @@ public class AuthController {
 
         try {
 
-            String username =
-                    (String) request.get("username");
+            // ================= VALIDATION =================
 
-            String email =
-                    (String) request.get("email");
+            if (request == null || request.isEmpty()) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of(
+                                "message",
+                                "Request body cannot be empty"
+                        ));
+            }
 
-            String password =
-                    (String) request.get("password");
+            String username = (String) request.get("username");
+            String email = (String) request.get("email");
+            String password = (String) request.get("password");
+            String role = (String) request.get("role");
 
-            String role =
-                    (String) request.get("role");
+            if ((username == null || username.isBlank()) &&
+                    (email == null || email.isBlank())) {
+
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of(
+                                "message",
+                                "Username or email is required"
+                        ));
+            }
+
+            if (password == null || password.isBlank()) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of(
+                                "message",
+                                "Password is required"
+                        ));
+            }
+
+            if (role == null || role.isBlank()) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of(
+                                "message",
+                                "Role is required"
+                        ));
+            }
 
             String identifier =
                     email != null && !email.isBlank()
-                            ? email
-                            : username;
+                            ? email.trim().toLowerCase()
+                            : username.trim();
+
+            // ================= AUTHENTICATE =================
 
             Optional<User> userOpt =
                     userService.authenticate(
@@ -359,7 +353,6 @@ public class AuthController {
                     );
 
             if (userOpt.isEmpty()) {
-
                 return ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of(
@@ -370,11 +363,11 @@ public class AuthController {
 
             User user = userOpt.get();
 
-            String token =
-                    userService.generateToken(user);
+            String token = userService.generateToken(user);
 
-            Map<String, Object> response =
-                    new HashMap<>();
+            // ================= SUCCESS RESPONSE =================
+
+            Map<String, Object> response = new HashMap<>();
 
             response.put("token", token);
 
@@ -391,7 +384,7 @@ public class AuthController {
                             user.getEmail(),
 
                             "role",
-                            user.getRole()
+                            user.getRole().toString()
                     )
             );
 
@@ -403,8 +396,7 @@ public class AuthController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "message",
-                            "Login failed: "
-                                    + e.getMessage()
+                            "Login failed: " + e.getMessage()
                     ));
         }
     }

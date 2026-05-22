@@ -87,11 +87,12 @@ public class UserService {
     }
 
     public Optional<User> getUserByUsernameOrEmail(String identifier) {
-        if (identifier == null || identifier.trim().isEmpty()) {
-            return Optional.empty();
-        }
-        String value = identifier.trim();
-        return userRepository.findByUsernameOrEmail(value, value);
+    if (identifier == null || identifier.trim().isEmpty()) {
+        return Optional.empty();
+    }
+    String value = identifier.trim();
+    return userRepository.findByUsernameOrEmail(value, value);
+    
     }
 
     public Optional<User> authenticate(String identifier, String password, String role) {

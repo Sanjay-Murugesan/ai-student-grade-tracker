@@ -31,13 +31,21 @@ public class Submission {
 
     private Double marks;
 
+    @Column(length = 1000)
+    private String feedback;
+
+    @Column(nullable = false)
     private String status = "SUBMITTED";
+
+    @Column(name = "graded_at")
+    private LocalDateTime gradedAt;
 
     @PrePersist
     protected void onCreate() {
         if (submittedDate == null) {
             submittedDate = LocalDateTime.now();
         }
+
         if (status == null || status.isBlank()) {
             status = "SUBMITTED";
         }

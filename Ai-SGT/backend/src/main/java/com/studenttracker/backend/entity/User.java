@@ -29,11 +29,30 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+
+        normalizeFields();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        normalizeFields();
+    }
+
+    private void normalizeFields() {
+        if (username != null) {
+            username = username.trim();
+        }
+
+        if (email != null) {
+            email = email.trim().toLowerCase();
+        }
     }
 }

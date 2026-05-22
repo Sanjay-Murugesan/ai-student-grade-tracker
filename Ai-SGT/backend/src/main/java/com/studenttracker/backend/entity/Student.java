@@ -18,9 +18,16 @@ public class Student {
     private Long studentId;
 
     private String name;
+
     private String email;
+
     private String department;
+
     private Integer year;
+
+    private Integer semester;
+
+    private String section;
 
     @Column(name = "user_id")
     private Long userId;
@@ -42,6 +49,45 @@ public class Student {
 
     @PrePersist
     protected void onCreate() {
-        enrollmentDate = LocalDateTime.now();
+        if (enrollmentDate == null) {
+            enrollmentDate = LocalDateTime.now();
+        }
+
+        if (gpa == null) {
+            gpa = 0.0;
+        }
+
+        if (cgpa == null) {
+            cgpa = 0.0;
+        }
+
+        if (attendancePercentage == null) {
+            attendancePercentage = 0.0;
+        }
+
+        normalizeFields();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        normalizeFields();
+    }
+
+    private void normalizeFields() {
+        if (department != null) {
+            department = department.trim().toUpperCase();
+        }
+
+        if (section != null) {
+            section = section.trim().toUpperCase();
+        }
+
+        if (email != null) {
+            email = email.trim().toLowerCase();
+        }
+
+        if (name != null) {
+            name = name.trim();
+        }
     }
 }

@@ -17,6 +17,16 @@ public class StudentService {
     }
 
     public Student save(Student s) {
+        if (s == null) {
+            throw new IllegalArgumentException("Student cannot be null");
+        }
+        return repo.save(s);
+    }
+
+    public Student createStudent(Student s) {
+        if (s == null) {
+            throw new IllegalArgumentException("Student cannot be null");
+        }
         return repo.save(s);
     }
 
@@ -25,26 +35,37 @@ public class StudentService {
     }
 
     public Student getById(Long id) {
+        if (id == null) {
+            return null;
+        }
         return repo.findById(id).orElse(null);
     }
 
     public Optional<Student> getByUserId(Long userId) {
+        if (userId == null) {
+            return Optional.empty();
+        }
         return repo.findByUserId(userId);
     }
 
-    public Student createStudent(Student s) {
-        return repo.save(s);
-    }
-
     public Student update(Long id, Student s) {
-        Student ex = getById(id);
-        if (ex == null)
+        if (id == null || s == null) {
             return null;
+        }
+
+        Student ex = getById(id);
+
+        if (ex == null) {
+            return null;
+        }
 
         ex.setName(s.getName());
         ex.setEmail(s.getEmail());
         ex.setDepartment(s.getDepartment());
         ex.setYear(s.getYear());
+        ex.setSemester(s.getSemester());
+        ex.setSection(s.getSection());
+        ex.setUserId(s.getUserId());
         ex.setGpa(s.getGpa());
         ex.setCgpa(s.getCgpa());
         ex.setAttendancePercentage(s.getAttendancePercentage());
@@ -54,6 +75,9 @@ public class StudentService {
     }
 
     public void delete(Long id) {
+        if (id == null) {
+            return;
+        }
         repo.deleteById(id);
     }
 }
