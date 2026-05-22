@@ -1,8 +1,9 @@
 # AI Student Grade Tracker
 
 AI Student Grade Tracker is a web-based student performance tracking system built using React, Spring Boot, MySQL, and AI prediction support. The system helps teachers manage students, assignments, submissions, grades, attendance, and performance insights. Students can view assignments, submit work, check grades, attendance, and AI-based performance predictions.
-
 ---
+
+
 
 ## Project Status
 
@@ -59,6 +60,11 @@ The system does not only store marks. It helps answer important questions such a
 - Is low attendance affecting performance?
 - Which assignments are pending or poorly scored?
 - What improvement suggestion can be given to the student?
+
+
+Students belong to a department, year, semester, and section.
+Instructors create assignments for a selected class and course.
+Students can view only their own class assignments and their own grades.
 
 ---
 
