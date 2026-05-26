@@ -280,304 +280,414 @@ export default function GradesPage() {
 
   const gridClass = isTeacher ? "grades-grid" : "grades-grid single";
 
-  return (
-    <div className="grades-container">
-      <div className="grades-header">
-        <div>
-          <h2 className="grades-title">Grades & Marks</h2>
-          <p className="grades-subtitle">
-            Record scores and track student performance at a glance.
-          </p>
-        </div>
+ return (
+  <div className="grades-container fade-page">
 
-        <div className="grades-actions">
-          <button
-            type="button"
-            className="grades-btn ghost"
-            onClick={() => fetchGrades(form.studentId)}
-            disabled={!form.studentId || loading}
-          >
-            {loading ? "Loading..." : "View Grades"}
-          </button>
-        </div>
+    <div className="grades-hero">
+
+      <div>
+        <h1 className="grades-main-title">
+          📊 Student Performance Dashboard
+        </h1>
+
+        <p className="grades-main-subtitle">
+          Track marks, GPA, assignments and academic performance.
+        </p>
       </div>
 
-      {message && <div className="grades-alert">{message}</div>}
+      <div className="grades-hero-badge">
+        {grades.length} Records
+      </div>
 
-      <div className={gridClass}>
-        {isTeacher && (
-          <div className="grades-card">
-            <h5 className="grades-card-title">
-              {editingGrade ? "Edit Grade" : "Add Grade"}
-            </h5>
+    </div>
 
-            <form onSubmit={handleAddGrade} className="grades-form">
-              <label className="grades-label">
-                Student
-                <select
-                  className="grades-input"
-                  required
-                  value={form.studentId}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      studentId: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select Student</option>
+    {message && (
+      <div className="grades-alert">
+        {message}
+      </div>
+    )}
 
-                  {students.map((student) => (
-                    <option key={student.studentId} value={String(student.studentId)}>
-                      {student.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+    <div className={gridClass}>
 
-              <label className="grades-label">
-                Assignment
-                <select
-                  className="grades-input"
-                  required
-                  value={form.assignmentId}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      assignmentId: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select Assignment</option>
+      {isTeacher && (
 
-                  {assignments.map((assignment) => (
-                    <option
-                      key={assignment.assignmentId}
-                      value={String(assignment.assignmentId)}
-                    >
-                      {assignment.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
+        <div className="grades-card">
 
-              <label className="grades-label">
-                Internal Marks
-                <input
-                  type="number"
-                  min="0"
-                  className="grades-input"
-                  placeholder="Internal marks"
-                  value={form.internalMarks}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      internalMarks: e.target.value,
-                    })
-                  }
-                />
-              </label>
+          <h5 className="grades-card-title">
+            ✏️ {editingGrade ? "Edit Grade" : "Add Grade"}
+          </h5>
 
-              <label className="grades-label">
-                Semester Marks
-                <input
-                  type="number"
-                  min="0"
-                  className="grades-input"
-                  placeholder="Semester marks"
-                  value={form.semesterMarks}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      semesterMarks: e.target.value,
-                    })
-                  }
-                />
-              </label>
+          <form
+            onSubmit={handleAddGrade}
+            className="grades-form"
+          >
 
-              <label className="grades-label">
-                Assignment Marks
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  className="grades-input"
-                  placeholder="Assignment marks"
-                  value={form.assignmentMarks}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      assignmentMarks: e.target.value,
-                    })
-                  }
-                />
-              </label>
+            <label className="grades-label">
+              Student
 
-              <label className="grades-label">
-                Semester
-                <input
-                  type="number"
-                  min="1"
-                  className="grades-input"
-                  placeholder="Semester"
-                  value={form.semester}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      semester: e.target.value,
-                    })
-                  }
-                />
-              </label>
+              <select
+                className="grades-input"
+                required
+                value={form.studentId}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    studentId:e.target.value,
+                  })
+                }
+              >
 
-              <button className="grades-btn primary" disabled={loading}>
-                {loading ? "Saving..." : editingGrade ? "Update Grade" : "Add Grade"}
+                <option value="">
+                  Select Student
+                </option>
+
+                {students.map((student)=>(
+                  <option
+                    key={student.studentId}
+                    value={String(student.studentId)}
+                  >
+                    {student.name}
+                  </option>
+                ))}
+
+              </select>
+            </label>
+
+            <label className="grades-label">
+              Assignment
+
+              <select
+                className="grades-input"
+                required
+                value={form.assignmentId}
+                onChange={(e)=>
+                  setForm({
+                    ...form,
+                    assignmentId:e.target.value,
+                  })
+                }
+              >
+
+                <option value="">
+                  Select Assignment
+                </option>
+
+                {assignments.map((assignment)=>(
+                  <option
+                    key={assignment.assignmentId}
+                    value={String(assignment.assignmentId)}
+                  >
+                    {assignment.title}
+                  </option>
+                ))}
+
+              </select>
+            </label>
+
+            <label className="grades-label">
+              Internal Marks
+
+              <input
+                type="number"
+                min="0"
+                className="grades-input"
+                placeholder="Internal marks"
+                value={form.internalMarks}
+                onChange={(e)=>
+                  setForm({
+                    ...form,
+                    internalMarks:e.target.value,
+                  })
+                }
+              />
+            </label>
+
+            <label className="grades-label">
+              Semester Marks
+
+              <input
+                type="number"
+                min="0"
+                className="grades-input"
+                placeholder="Semester marks"
+                value={form.semesterMarks}
+                onChange={(e)=>
+                  setForm({
+                    ...form,
+                    semesterMarks:e.target.value,
+                  })
+                }
+              />
+            </label>
+
+            <label className="grades-label">
+              Assignment Marks
+
+              <input
+                type="number"
+                required
+                min="0"
+                className="grades-input"
+                placeholder="Assignment marks"
+                value={form.assignmentMarks}
+                onChange={(e)=>
+                  setForm({
+                    ...form,
+                    assignmentMarks:e.target.value,
+                  })
+                }
+              />
+            </label>
+
+            <label className="grades-label">
+              Semester
+
+              <input
+                type="number"
+                min="1"
+                className="grades-input"
+                placeholder="Semester"
+                value={form.semester}
+                onChange={(e)=>
+                  setForm({
+                    ...form,
+                    semester:e.target.value,
+                  })
+                }
+              />
+            </label>
+
+            <button
+              className="grades-btn primary"
+              disabled={loading}
+            >
+              {loading
+                ? "Saving..."
+                : editingGrade
+                ? "Update Grade"
+                : "Add Grade"}
+            </button>
+
+            {editingGrade && (
+
+              <button
+                type="button"
+                className="grades-btn ghost"
+                onClick={resetForm}
+              >
+                Cancel Edit
               </button>
 
-              {editingGrade && (
-                <button
-                  type="button"
-                  className="grades-btn ghost"
-                  onClick={resetForm}
-                >
-                  Cancel Edit
-                </button>
-              )}
-            </form>
-          </div>
-        )}
+            )}
 
-        <div className="grades-card stats">
-          <h5 className="grades-card-title">Overview</h5>
+          </form>
 
-          <div className="grades-stats">
-            <div className="grades-stat">
-              <span className="grades-stat-label">Total</span>
-              <span className="grades-stat-value">{stats.total}</span>
-            </div>
-
-            <div className="grades-stat">
-              <span className="grades-stat-label">Average</span>
-              <span className="grades-stat-value">{stats.avg}</span>
-            </div>
-
-            <div className="grades-stat">
-              <span className="grades-stat-label">Highest</span>
-              <span className="grades-stat-value">{stats.max}</span>
-            </div>
-
-            <div className="grades-stat">
-              <span className="grades-stat-label">GPA</span>
-              <span className="grades-stat-value">
-                {Number(studentProfile?.gpa || 0).toFixed(2)}
-              </span>
-            </div>
-
-            <div className="grades-stat">
-              <span className="grades-stat-label">CGPA</span>
-              <span className="grades-stat-value">
-                {Number(studentProfile?.cgpa || studentProfile?.gpa || 0).toFixed(2)}
-              </span>
-            </div>
-          </div>
         </div>
+
+      )}
+
+      <div className="grades-card stats">
+
+        <h5 className="grades-card-title">
+          📈 Overview
+        </h5>
+
+        <div className="modern-stats-grid">
+
+          <div className="modern-stat-card">
+            <span>📚 Total Grades</span>
+            <h2>{stats.total}</h2>
+          </div>
+
+          <div className="modern-stat-card">
+            <span>📈 Average</span>
+            <h2>{stats.avg}</h2>
+          </div>
+
+          <div className="modern-stat-card">
+            <span>🏆 Highest</span>
+            <h2>{stats.max}</h2>
+          </div>
+
+          <div className="modern-stat-card">
+            <span>🎯 GPA</span>
+            <h2>
+              {Number(studentProfile?.gpa || 0).toFixed(2)}
+            </h2>
+          </div>
+
+        </div>
+
       </div>
 
-      <div className="grades-list-card">
-        <div className="grades-list-header">
-          <h5 className="grades-card-title">Student Grades</h5>
-          <span className="grades-count">{grades.length} entries</span>
+    </div>
+
+    <div className="grades-list-card">
+
+      <div className="grades-list-header">
+
+        <h5 className="grades-card-title">
+          🎓 Student Grades
+        </h5>
+
+        <span className="grades-count">
+          {grades.length} entries
+        </span>
+
+      </div>
+
+      {grades.length===0 ? (
+
+        <div className="grades-empty">
+          No grades yet.
         </div>
 
-        {grades.length === 0 ? (
-          <div className="grades-empty">
-            No grades yet. Select a student to view or add scores.
-          </div>
-        ) : (
-          <div className="grades-list">
-            {grades.map((grade) => {
-              const assignment = assignmentMap.get(String(grade.assignmentId));
+      ) : (
 
-              const maxMarks = assignment?.maxMarks ?? null;
+        <div className="grades-list">
 
-              const currentScore =
-                grade.marks ?? grade.score ?? grade.assignmentMarks ?? 0;
+          {grades.map((grade)=>{
 
-              const progress = maxMarks
-                ? Math.min(100, Math.round((Number(currentScore) / maxMarks) * 100))
+            const assignment =
+              assignmentMap.get(
+                String(grade.assignmentId)
+              );
+
+            const maxMarks =
+              assignment?.maxMarks ?? null;
+
+            const currentScore =
+              grade.marks ??
+              grade.score ??
+              grade.assignmentMarks ??
+              0;
+
+            const progress =
+              maxMarks
+                ? Math.min(
+                    100,
+                    Math.round(
+                      (Number(currentScore)/maxMarks)*100
+                    )
+                  )
                 : null;
 
-              return (
-                <div key={grade.gradeId} className="grades-item">
-                  <div className="grades-item-main">
-                    <div className="grades-item-title">
-                      {assignment?.title || `Assignment #${grade.assignmentId}`}
-                    </div>
+            return (
 
+              <div
+                key={grade.gradeId}
+                className="grades-item"
+              >
+
+                <div className="grades-item-main">
+
+                  <div className="grades-item-title">
+                    📘 {
+                      assignment?.title ||
+                      `Assignment #${grade.assignmentId}`
+                    }
+                  </div>
+
+                  <div className="grades-item-meta">
+                    ID: {grade.assignmentId}
+                    {grade.semester
+                      ? ` · Sem ${grade.semester}`
+                      : ""}
+                  </div>
+
+                  {grade.feedback && (
                     <div className="grades-item-meta">
-                      ID: {grade.assignmentId}
-                      {grade.grade ? ` · Grade ${grade.grade}` : ""}
-                      {grade.semester ? ` · Sem ${grade.semester}` : ""}
+                      Feedback: {grade.feedback}
                     </div>
+                  )}
 
-                    {grade.feedback && (
-                      <div className="grades-item-meta">
-                        Feedback: {grade.feedback}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grades-item-score">
-                    <div className="grades-score-pill">
-                      {currentScore}
-                      {maxMarks ? ` / ${maxMarks}` : ""}
-                      {grade.gradePoints ? ` · GP ${grade.gradePoints}` : ""}
-                    </div>
-
-                    {progress !== null && (
-                      <div className="grades-progress">
-                        <div
-                          className="grades-progress-bar"
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                    )}
-
-                    {isTeacher && (
-                      <div className="grades-item-actions">
-                        <button
-                          type="button"
-                          className="grades-small-btn edit"
-                          onClick={() => handleEditGrade(grade)}
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          className="grades-small-btn delete"
-                          onClick={() =>
-                            handleDeleteGrade(grade.gradeId, grade.studentId)
-                          }
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+
+                <div className="grades-item-score">
+
+                  <div className="grades-score-pill">
+                    🎯 {currentScore}
+                    {maxMarks
+                      ? ` / ${maxMarks}`
+                      : ""}
+                  </div>
+
+                  {progress !== null && (
+
+                    <div className="grades-progress">
+
+                      <div
+                        className="grades-progress-bar"
+                        style={{
+                          width:`${progress}%`,
+                        }}
+                      ></div>
+
+                    </div>
+
+                  )}
+
+                  {isTeacher && (
+
+                    <div className="grades-item-actions">
+
+                      <button
+                        type="button"
+                        className="grades-small-btn edit"
+                        onClick={() =>
+                          handleEditGrade(grade)
+                        }
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="grades-small-btn delete"
+                        onClick={() =>
+                          handleDeleteGrade(
+                            grade.gradeId,
+                            grade.studentId
+                          )
+                        }
+                      >
+                        Delete
+                      </button>
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            );
+
+          })}
+
+        </div>
+
+      )}
+
+    </div>
+
+    {grades.length > 0 && (
+
+      <div className="grades-chart-card">
+
+        <h5 className="grades-card-title">
+          📊 Performance Chart
+        </h5>
+
+        <StudentChart grades={grades} />
+
       </div>
 
-      {grades.length > 0 && (
-        <div className="grades-chart-card">
-          <h5 className="grades-card-title">Performance Chart</h5>
-          <StudentChart grades={grades} />
-        </div>
-      )}
-    </div>
-  );
+    )}
+
+  </div>
+);
+
+      
 }
