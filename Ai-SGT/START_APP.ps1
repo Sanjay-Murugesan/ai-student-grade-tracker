@@ -1,50 +1,38 @@
 # PowerShell Script to start all services
 
-Write-Host "`n=========================================="
+$ErrorActionPreference = 'Stop'
+$workspaceRoot = 'c:\Users\mssan\ai-student-grade-tracker\Ai-SGT'
+$backendPath = Join-Path $workspaceRoot 'backend'
+$frontendPath = Join-Path $workspaceRoot 'frontend\student-tracker'
+$aiPath = Join-Path $workspaceRoot 'ai-engine'
+
+Write-Host "`n==========================================" -ForegroundColor Cyan
 Write-Host "  Student Tracker - Full Stack Application" -ForegroundColor Cyan
 Write-Host "==========================================`n" -ForegroundColor Cyan
 
-# Add MySQL to PATH
-$env:PATH += ";C:\Program Files\MySQL\MySQL Server 8.0\bin"
+Write-Host "[1/4] Starting AI engine on port 8000..." -ForegroundColor Yellow
+Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd `"$aiPath`" && python -m uvicorn app:app --host 0.0.0.0 --port 8000" -WindowStyle Normal
 
-# Check if MySQL is running
-Write-Host "[1/4] Checking MySQL Server..." -ForegroundColor Yellow
-try {
-    mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS student_tracker_db; SELECT 'MySQL is running' as status;" 2>$null
-    Write-Host "✓ MySQL is running and database exists" -ForegroundColor Green
-} catch {
-    Write-Host "✗ MySQL is not running. Please start MySQL Server" -ForegroundColor Red
-    exit 1
-}
+Write-Host "[2/4] Starting Spring Boot backend on port 8080..." -ForegroundColor Yellow
+Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd `"$backendPath`" && .\mvnw.cmd spring-boot:run" -WindowStyle Normal
 
-# Start Backend
-Write-Host "`n[2/4] Starting Spring Boot Backend on port 8080..." -ForegroundColor Yellow
-$backendPath = "c:\Users\mssan\OneDrive\Desktop\Ai-SGT\Ai-SGT\backend"
-Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd `"$backendPath`" && mvnw.cmd spring-boot:run" -WindowStyle Normal
-
-# Wait for backend to start
-Write-Host "Waiting for backend to start (15 seconds)..." -ForegroundColor Gray
+Write-Host "Waiting for backend to start..." -ForegroundColor Gray
 Start-Sleep -Seconds 15
 
-# Start Frontend
-Write-Host "`n[3/4] Starting React Frontend on port 3001..." -ForegroundColor Yellow
-$frontendPath = "c:\Users\mssan\OneDrive\Desktop\Ai-SGT\Ai-SGT\frontend\student-tracker"
+Write-Host "[3/4] Starting React frontend on port 3000..." -ForegroundColor Yellow
 Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd `"$frontendPath`" && npm start" -WindowStyle Normal
 
-# Wait for frontend to start
-Write-Host "Waiting for frontend to start (10 seconds)..." -ForegroundColor Gray
-Start-Sleep -Seconds 10
+Write-Host "Waiting for frontend to start..." -ForegroundColor Gray
+Start-Sleep -Seconds 15
 
-Write-Host "`n=========================================="
+Write-Host "`n==========================================" -ForegroundColor Green
 Write-Host "✓ All services started successfully!" -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Green
-Write-Host "`nBackend API:  http://localhost:8080" -ForegroundColor Cyan
-Write-Host "Frontend:     http://localhost:3001" -ForegroundColor Cyan
+Write-Host "`nBackend API:   http://localhost:8080" -ForegroundColor Cyan
+Write-Host "Frontend:     http://localhost:3000" -ForegroundColor Cyan
+Write-Host "AI Engine:    http://localhost:8000/docs" -ForegroundColor Cyan
 Write-Host "`nOpening application in browser...`n" -ForegroundColor Cyan
 
-# Open browser
-Start-Process "http://localhost:3001"
+try { Start-Process "http://localhost:3000" } catch {}
 
 Write-Host "To stop all services, close the command windows." -ForegroundColor Yellow
-Write-Host "Press any key to exit this script..."
-$null = [Console]::ReadKey($true)

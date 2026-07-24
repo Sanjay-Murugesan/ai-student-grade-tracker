@@ -1,5 +1,6 @@
 package com.studenttracker.backend.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class Student {
 
     private String department;
 
+    @Column(name = "study_year")
     private Integer year;
 
     private Integer semester;
