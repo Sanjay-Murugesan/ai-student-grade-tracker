@@ -1,0 +1,41 @@
+Traceback (most recent call last):
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\logging\config.py", line 544, in configure
+    formatters[name] = self.configure_formatter(
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\logging\config.py", line 656, in configure_formatter
+    result = self.configure_custom(config)
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\logging\config.py", line 475, in configure_custom
+    result = c(**kwargs)
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\logging.py", line 42, in __init__
+    self.use_colors = sys.stdout.isatty()
+AttributeError: 'NoneType' object has no attribute 'isatty'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\click\core.py", line 1485, in __call__
+    return self.main(*args, **kwargs)
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\click\core.py", line 1406, in main
+    rv = self.invoke(ctx)
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\click\core.py", line 1269, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\click\core.py", line 824, in invoke
+    return callback(*args, **kwargs)
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\main.py", line 433, in main
+    run(
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\main.py", line 541, in run
+    config = Config(
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\config.py", line 280, in __init__
+    self.configure_logging()
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\site-packages\uvicorn\config.py", line 372, in configure_logging
+    logging.config.dictConfig(self.log_config)
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\logging\config.py", line 811, in dictConfig
+    dictConfigClass(config).configure()
+  File "C:\Users\mssan\AppData\Local\Programs\Python\Python310\lib\logging\config.py", line 547, in configure
+    raise ValueError('Unable to configure '
+ValueError: Unable to configure formatter 'default'
