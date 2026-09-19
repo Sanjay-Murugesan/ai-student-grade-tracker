@@ -1,0 +1,93 @@
+/* FULL PAGE */
+.auth-container {
+  display: flex;
+  height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+}
+
+/* LEFT SIDE (FORM) */
+.auth-left {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* GLASS CARD */
+.auth-box {
+  width: 90%;
+  max-width: 420px;
+  padding: 40px;
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  color: white;
+}
+
+/* RIGHT SIDE (ILLUSTRATION) */
+.auth-right {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-right img {
+  width: 80%;
+}
+
+/* HEADINGS */
+.auth-box h2 {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+/* INPUTS */
+.auth-box input,
+.auth-box select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
+
+/* BUTTON */
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(45deg, #ff6a00, #ee0979);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.auth-btn:hover {
+  transform: scale(1.05);
+}
+
+/* LINKS */
+.auth-links {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.auth-links a {
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* ERROR */
+.error-box {
+  background: rgba(255,0,0,0.2);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
