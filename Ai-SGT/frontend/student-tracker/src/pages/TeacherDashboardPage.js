@@ -9,7 +9,8 @@ import {
   getGrades,
   getStudents,
   updateStudent,
-} from "../services/api";
+}
+from "../services/api";
 import { average, daysUntil, formatDisplayDate } from "../utils/portal";
 import "../styles/portal.css";
 import "../styles/dashboard-pages.css";

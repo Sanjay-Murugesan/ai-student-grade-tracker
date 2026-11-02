@@ -152,6 +152,18 @@ export default function StudentDashboardPage() {
   return (
     <div className="portal-page dashboard-clean">
       <section className="portal-hero">
+        <video
+          className="portal-hero-bg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+        >
+          <source src="/videos/hero-bg.mp4" type="video/mp4" />
+        </video>
+        <div className="portal-hero-overlay" />
+
         <div className="portal-hero-copy">
           <div className="portal-kicker">Student Workspace</div>
           <h1>{`Welcome back, ${student?.name || user?.name || user?.username || "Student"}`}</h1>
