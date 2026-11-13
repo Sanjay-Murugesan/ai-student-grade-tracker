@@ -19,20 +19,13 @@ export default function ProtectedLayout() {
           onLogout={logout}
           role={user?.role}
         />
-
-        <section
-          className={`app-main ${
-            sidebarOpen ? "sidebar-open" : "sidebar-closed"
-          }`}
-        >
+        <section className="app-main">
           <Navbar />
-
           <div className="app-content">
             <Outlet />
           </div>
         </section>
       </div>
-
       <Footer />
     </div>
   );
